@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+  <head>
+    <title>040 - Tidbokning</title>
+    <link rel='stylesheet' href='/css/base.css' />
+    {{{yield-styles}}}
+    <script src='/js/jquery-1.10.2.min.js'></script>
+    {{{yield-scripts}}}
+  </head>
+  <body>
+    <div class='menubar'>
+      <a class='logout' href='login'>Logga ut</a>
+      <span class='userinfo'>Inloggad som {{username}}</span>
+    </div>
+    {{{yield}}}
+  </body>
+</html>

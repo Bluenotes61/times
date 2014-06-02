@@ -2,7 +2,7 @@
 
 var mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost:27017/Tidbokning');
+mongoose.connect('mongodb://localhost:27017/BookTimes');
 
 var UserSchema = new mongoose.Schema({
   username:String,
@@ -12,27 +12,33 @@ var UserSchema = new mongoose.Schema({
 });
 
 var TimeSchema = new mongoose.Schema({
-  activityid: String,
+  activity: { type:mongoose.Schema.Types.ObjectId, ref:'Activities' },
   description:String,
   starttime: Date,
   endtime: Date,
   elapsedtime: Number
 });
+TimeSchema.methods.test = function(){
+  return "testres";
+}
 
 var ActivitySchema = new mongoose.Schema({
+  project: { type:mongoose.Schema.Types.ObjectId, ref:'Projects' },
   name:String,
   user:String,
-  active:Boolean
+  active:Boolean,
+  times: [{ type:mongoose.Schema.Types.ObjectId, ref:'Times' }]
 });
 
 var ProjectSchema = new mongoose.Schema({
+  customer: { type:mongoose.Schema.Types.ObjectId, ref:'Customers' },
   name:String,
-  activities: [ActivitySchema]
+  activities: [{ type:mongoose.Schema.Types.ObjectId, ref:'Activities' }]
 });
 
 var CustomerSchema = new mongoose.Schema({
   name:String,
-  projects: [ProjectSchema]
+  projects: [{ type:mongoose.Schema.Types.ObjectId, ref:'Projects' }]
 });
 
 var Users = mongoose.model("Users", UserSchema);
@@ -51,20 +57,55 @@ module.exports.loginUser = function(username, password, callback) {
 };
 
 
+function sortTimes(a, b, col, dir) {
+  var colsplit = col.split('.');
+  var acol = a[colsplit[0]];
+  var bcol = b[colsplit[0]];
+  for (var i=1; i < colsplit.length;i++) {
+    acol = acol[colsplit[i]];
+    bcol = bcol[colsplit[i]];
+  }
+  var col1 = (dir == 'desc' ? bcol : acol);
+  var col2 = (dir == 'desc' ? acol : bcol); 
+  return ((col1 < col2) ? -1 : ((col1 > col2) ? 1 : 0));
+}
+
 module.exports.getTimes = function(req, res) {
   var page = req.query.page;
   var maxnof = req.query.rows;
-  //skip start
+  var cols = req.query.cols.split(',');
+  var sortcol = req.query.sidx;
+  var sortorder = req.query.sord;
 
-  Times.find({}, function(err, times){
+  Times.find({}).populate('activity', "name project").exec(function(err, times1){
+    console.log(times1[0]);
+    console.log(times1[0].test());
     var start = maxnof*(page - 1);
-    var totpages = (times.length > 0 ? parseInt(Math.floor(times.length/maxnof), 10) : 0);
-    var pagetimes = times.splice(start, maxnof);
-    res.json({
-      page:page,
-      total:totpages,
-      records:times.length,
-      rows:pagetimes
+    var totpages = (times1.length > 0 ? parseInt(Math.floor(times1.length/maxnof), 10) : 0);
+    Projects.populate(times1, {
+      path:'activity.project', 
+      model:'Projects', 
+      select:'name customer' 
+    }, function(err, times2){
+      Customers.populate(times2, {path:'activity.project.customer', model:'Customers', select:'name', options:{sort:'elapsedtime'}}, function(err, times3){
+        times3 = times3.filter(function(atime) {
+          var ok = true;
+          for (var i=0; i < cols.length; i++) {
+            if (req.query[cols[i]]) {
+              ok = ok && (eval("atime." + cols[i]) == req.query[cols[i]]);
+            }
+          }
+          return ok;
+        }).sort(function(a, b){
+          return sortTimes(a, b, sortcol, sortorder);
+        }).splice(start, maxnof);
+        res.json({
+          page:page,
+          total:totpages,
+          records:times3.length,
+          rows:times3
+        });
+      });
     });
   });
 };
@@ -120,11 +161,17 @@ inner join userids i on
 
 
 module.exports.importTimes = function(req, res) {
-  Customers.remove({}, function(err) {
-    console.log("Dropped customers: " + err);
-  });
   Times.remove({}, function(err) {
     console.log("Dropped times: " + err);
+  });
+  Activities.remove({}, function(err) {
+    console.log("Dropped activities: " + err);
+  });
+  Projects.remove({}, function(err) {
+    console.log("Dropped projects: " + err);
+  });
+  Customers.remove({}, function(err) {
+    console.log("Dropped customers: " + err);
   });
 
   var fs = require("fs");
@@ -143,6 +190,7 @@ function processLine(lines, idx) {
   var arr = lines[idx].split(';');
   if (arr[0].length == 0)
     return;
+  
   var values = {
     customer: arr[0],
     project: arr[1],
@@ -153,6 +201,13 @@ function processLine(lines, idx) {
     endtime: (arr[6] == 'NULL' ? '' : arr[6]),
     elapsedtime: (arr[7] == 'NULL' || arr[7] == '' ? 0 : parseInt(arr[7]))
   };
+  
+  addCustomer(values, function(){
+    processLine(lines, idx+1);
+  });
+}
+
+function addCustomer(values, callback) {
   Customers.findOne({ 'name': values.customer }, function (err, customer) {
     if (!customer) {
       customer = new Customers ({
@@ -160,55 +215,63 @@ function processLine(lines, idx) {
         projects:[]
       });
     }
-    var activity = addProject(values, customer);
-    customer.save(function(err, docs){
-      addTime(values, activity._id);
-      processLine(lines, idx+1);
+    addProject(values, customer, function(){
+      customer.save(function(err, docs){
+        callback();
+      });
     });
   });
 }
 
 
-function addProject(values, customer) {
-  var project = null;
-  for (var i=0; i < customer.projects.length && !project; i++) {
-    if (customer.projects[i].name === values.project)
-      project = customer.projects[i];
-  }
-  if (!project) {
-    project = new Projects ({
-      name:values.project,
-      activities:[]
+function addProject(values, customer, callback) {
+  Projects.findOne({ 'customer': customer._id, 'name': values.project }, function (err, project) {
+    if (!project) {
+      project = new Projects ({
+        customer:customer._id,
+        name:values.project,
+        activities:[]
+      });
+    }
+    addActivity(values, project, function(){
+      project.save(function(err, docs){
+        customer.projects.push(project._id);
+        callback();
+      });
     });
-    customer.projects.push(project);
-  }
-  return addActivity(values, project);
+  });
 }
 
-function addActivity(values, project) {
-  var activity = null;
-  for (var i=0; i < project.activities.length && !activity; i++) {
-    if (project.activities[i].name === values.activity)
-      activity = project.activities[i];
-  }
-  if (!activity) {
-    activity = new Activities ({
-      name:values.activity,
-      user:values.username,
-      active:0
+function addActivity(values, project, callback) {
+  Activities.findOne({ 'project': project._id, 'name': values.activity }, function (err, activity) {
+    if (!activity) {
+      activity = new Activities ({
+        project:project._id,
+        name:values.activity,
+        user:values.username,
+        active:false,
+        times:[]
+      });
+    }
+    addTime(values, activity, function(){
+      activity.save(function(err, docs){
+        project.activities.push(activity._id);
+        callback();
+      });
     });
-    project.activities.push(activity);
-  }
-  return activity;
+  });
 }
 
-function addTime(values, activityid) {
+function addTime(values, activity, callback) {
   var time = new Times ({
-    activityid: activityid,
+    activity: activity._id,
     description:values.description,
     starttime: values.starttime,
     endtime: values.endtime,
     elapsedtime: values.elapsedtime
   });
-  time.save();
+  time.save(function(err, docs){
+    activity.times.push(time._id);
+    callback();
+  });
 }

@@ -73,13 +73,16 @@ function sortTimes(a, b, col, dir) {
 module.exports.getTimes = function(req, res) {
   var page = req.query.page;
   var maxnof = req.query.rows;
-  var cols = req.query.cols.split(',');
   var sortcol = req.query.sidx;
   var sortorder = req.query.sord;
+  var cols = req.query.cols.split(',');
+  var filters = (req.query.filters ? JSON.parse(req.query.filters) : null);
+  if (sortcol == "_id") {
+    sortcol = "starttime";
+    sortorder = "desc";
+  }
 
   Times.find({}).populate('activity', "name project").exec(function(err, times1){
-    console.log(times1[0]);
-    console.log(times1[0].test());
     var start = maxnof*(page - 1);
     var totpages = (times1.length > 0 ? parseInt(Math.floor(times1.length/maxnof), 10) : 0);
     Projects.populate(times1, {
@@ -87,15 +90,9 @@ module.exports.getTimes = function(req, res) {
       model:'Projects', 
       select:'name customer' 
     }, function(err, times2){
-      Customers.populate(times2, {path:'activity.project.customer', model:'Customers', select:'name', options:{sort:'elapsedtime'}}, function(err, times3){
+      Customers.populate(times2, {path:'activity.project.customer', model:'Customers', select:'name'}, function(err, times3){
         times3 = times3.filter(function(atime) {
-          var ok = true;
-          for (var i=0; i < cols.length; i++) {
-            if (req.query[cols[i]]) {
-              ok = ok && (eval("atime." + cols[i]) == req.query[cols[i]]);
-            }
-          }
-          return ok;
+          return filterRow(req.query, cols, filters, atime);
         }).sort(function(a, b){
           return sortTimes(a, b, sortcol, sortorder);
         }).splice(start, maxnof);
@@ -109,6 +106,74 @@ module.exports.getTimes = function(req, res) {
     });
   });
 };
+
+
+module.exports.getCustomers = function(req, res) {
+  Customers.find({}, "name", function(err, docs) {
+    var customers = [];
+    for (var i=0; i < docs.length; i++)
+      customers.push(docs[i].name);
+    res.json(customers);
+  });
+};
+
+module.exports.getProjects = function(req, res) {
+  var customer = req.query.customer;
+
+  Customers.findOne({'name':customer}).populate('projects').exec(function(err, docs) { 
+    var projects = [];
+    if (docs) {
+      for (var i=0; i < docs.projects.length; i++)
+        projects.push(docs.projects[i].name);
+    }
+    res.json(projects);
+  });
+};
+
+module.exports.getActivities = function(req, res) {
+  var project = req.query.project;
+
+  Projects.findOne({'name':project}).populate('activities').exec(function(err, docs) { 
+    var activities = [];
+    if (docs) {
+      for (var i=0; i < docs.activities.length; i++)
+        activities.push(docs.activities[i].name);
+    }
+    res.json(activities);
+  });
+};
+
+function filterRow(query, cols, filters, arow) {
+  var ok1 = true;
+  for (var i=0; i < cols.length; i++) {
+    if (query[cols[i]]) { 
+      var colval = eval("arow." + cols[i]).toLowerCase(); 
+      ok1 = ok1 && (colval.indexOf(query[cols[i]].toLowerCase()) >= 0);
+    }
+  }
+  var ok2 = true;
+  if (filters) {
+    var groupOp = filters.groupOp;
+    for (var i=0; i < filters.rules.length; i++) {
+      var colval = eval("arow." + filters.rules[i].field).toLowerCase(); 
+      var filterval = filters.rules[i].data.toLowerCase();
+      var ok3 = true;
+      switch(filters.rules[i].op) {
+        case "ne": ok3 = (colval != filterval); break;
+        case "cn": ok3 = (colval.indexOf(filterval) >= 0); break;
+        case "nc": ok3 = (colval.indexOf(filterval) < 0); break;
+        default: ok3 = (colval == filterval);
+      } 
+      if (groupOp == "OR")
+        ok2 = ok2 || ok3;
+      else
+        ok2 = ok2 && ok3;
+    }
+  }
+  return ok1 && ok2;
+}
+
+
 
 
 module.exports.importUsers = function(req, res) {

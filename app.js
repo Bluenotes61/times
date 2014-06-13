@@ -37,6 +37,9 @@ app.get("/gettimes", db.getTimes);
 app.get("/importusers", db.importUsers);
 app.get("/importtimes", db.importTimes);
 
+app.get("/getcustomers", db.getCustomers);
+app.get("/getprojects", db.getProjects);
+app.get("/getactivities", db.getActivities);
  
 /// catch 404 and forwarding to error handler
 app.use(function(req, res, next) {

@@ -1,13 +1,18 @@
 {{#yield-styles}}
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
   <link rel='stylesheet' href='/js/jqgrid/css/ui.jqgrid.css' />
-  <link rel='stylesheet' href='/css/jquery-ui-1.10.4.custom.min.css' />
   <link rel='stylesheet' href='/css/index.css' />
 {{/yield-styles}}
 
 {{#yield-scripts}}
-  <script src='/js/index.js'></script>
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+
   <script src='/js/jqgrid/js/jquery.jqGrid.min.js'></script>
   <script src='/js/jqgrid/js/i18n/grid.locale-sv.js'></script>
+
+  <script src='/js/combo.js'></script>
+  <script src='/js/index.js'></script>
 {{/yield-scripts}}
 
 <h1>{{title}}</h1>

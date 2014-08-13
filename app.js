@@ -5,21 +5,19 @@ var staticFolder = require('static');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 
-var db = require("./routes/db.js");
-var login = require("./routes/login.js");
-var mainpage = require("./routes/mainpage.js");
-
 var app = express(); 
 
 var server = app.listen(3000, function() {
   console.log('Listening on port %d', server.address().port);
 });
  
+
 app.set('views', __dirname + '/views');
 app.set('view engine', 'html');
 app.set('layout', 'layout');
 //app.enable('view cache');
 app.engine('html', require('hogan-express')); 
+
 
 app.use(bodyParser());            
 app.use(methodOverride());
@@ -27,20 +25,25 @@ app.use(cookieParser());
 app.use(session({secret:'En hemlighet'}));
 app.use(express.static(__dirname + '/public'));
 
+
+var db = require("./routes/db.js");
+var login = require("./routes/login.js");
+var mainpage = require("./routes/mainpage.js");
+
 app.get("/login", login.index); 
 app.post("/login", login.post);
-
 app.get("/", mainpage.index);  
 
-app.get("/gettimes", db.getTimes);
 
-app.get("/importusers", db.importUsers);
-app.get("/importtimes", db.importTimes);
+/*** Ajax functions ***/
+app.get("/gettimes", db.getTimes);
 
 app.get("/getcustomers", db.getCustomers);
 app.get("/getprojects", db.getProjects);
 app.get("/getactivities", db.getActivities);
+
  
+
 /// catch 404 and forwarding to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
@@ -48,7 +51,6 @@ app.use(function(req, res, next) {
   next(err);
 });
 
-/// error handlers
 
 // development error handler
 // will print stacktrace

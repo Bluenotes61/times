@@ -1,31 +1,71 @@
 $(document).ready(function(){
 
-  var lasteditrow;
+  var customers = {};
 
   function init() {
-    initGrid();
+    $.get('/getcustomers', {}, function(cust) {
+      for (var i=0; i < cust.length; i++)
+        customers[cust[i].value] = cust[i].label;
+      initGrid();
+    });
+    $("#combotest").select2({
+      placeholder: "Projekt",
+      allowClear: true
+    });
+    $("#combotest2").select2({
+      placeholder: "Projekt2",
+      allowClear: true,
+      createSearchChoice: function(term, data) {
+        if ( 
+          $(data).filter( function() {
+            return this.text.localeCompare(term)===0;
+          }).length === 0) {
+          return {id:term, text:term};
+        }
+      },
+      data:projData
+    });
+  }
+    var src = {results:[{id:0,text:'aaa'}, {id:1,text:'bbb'}, {id:2,text:'xxx'}]};
+    /*setTimeout(function(){
+      src = {results:[{id:0,text:'111'}, {id:1,text:'222'}, {id:2,text:'333'}]};
+    }, 5000);*/
+
+  function projData() {
+    return src;
   }
 
   function initGrid() {
     $("#timesgrid").jqGrid({
       url:'/gettimes',
+      editurl:'/xx',
       autowidth:true,
       postData: {
         idcol:"_id",
-        cols:"_id,activity.project.customer.name,activity.project.name,activity.name,description,starttime,starttime,endtime,elapsedtime"
+        cols:"id,customer,project,activity,description,starttime,starttime,endtime,elapsedtime"
       },
       colNames: ['','Kund', 'Projekt', 'Aktivitet', 'Beskrivning', 'Datum', 'Starttid', 'Sluttid', 'Tidsåtgång'],
       colModel:[
-        {name:'_id', hidden:true },
+        {name:'id', hidden:true },
         {
-          name:'activity.project.customer.name', width:'10%', 
+          name:'customer', width:'10%', 
+          sortable:true, editable:true, edittype:"select", 
+          editoptions: {
+            value: customers,
+            dataEvents: [{
+              type:"change",
+              fn: fillEditProjectSelect
+            }]
+          }
+        },
+        {
+          name:'project', width:'10%', 
           sortable:true, editable:true, edittype:"text"
         },
         {
-          name:'activity.project.name', width:'10%', 
+          name:'activity', width:'10%', 
           sortable:true, editable:true, edittype:"text"
         },
-        {name:'activity.name', width:'10%', sortable:true, editable:true },
         {name:'description', width:'15%', sortable:true, editable:true },
         {name:'starttime', width:'5%', 
           searchoptions:{
@@ -52,45 +92,54 @@ $(document).ready(function(){
       gridComplete: function(){
 
       },
-      onSelectRow: function(id) {
-        if (id && id !== lasteditrow) { 
-          $('#timesgrid').jqGrid('restoreRow', lasteditrow); 
-          $('#timesgrid').jqGrid('editRow', id, true, function() {
-            var customerInput = $("#" + id + " td:nth-child(2) input");
-            var projectInput = $("#" + id + " td:nth-child(3) input");
-            var activityInput = $("#" + id + " td:nth-child(4) input");
-            customerInput.on("focus", function(){
-              $.get('/getcustomers', {}, function(customers) {
-                setupAutoComplete(customerInput, customers, projectInput);
-              });
-            });
-            projectInput.on("focus", function(){
-              $.get('/getprojects', {customer:customerInput.val()}, function(projects) {
-                setupAutoComplete(projectInput, projects, activityInput);
-              });
-            });
-          }); 
-          lasteditrow = id; 
-        } 
-      },
       datatype: "json",
       altRows:false,
       rowNum:10,
       rowList:[10,20,50,100],
       pager: '#timesctrl',
-      sortname: '_id',
+      sortname: 'id',
       viewrecords: true,
       height:'100%'
     //  forceFit:true,
       //shrinkToFit:false
     }).navGrid(
       '#timesctrl',
-      {edit:false,add:false,del:false},
-      {},            
+      {edit:true,add:false,del:false},
+      {
+        onInitializeForm: function(){
+          fillEditProjectSelect($("#project").val());
+        },
+        width:"auto"
+      },            
       {},
       {},
       {multipleSearch:true}
     ).filterToolbar();
+
+  }
+
+  function fillEditProjectSelect(projlabel) {
+    $.get('/getprojects', {customer:$("#customer").val()}, function(projects) {
+      var sel = $("<select id='project' name='project' role='select' />");
+      sel.attr("class", $("#project").attr("class"));
+      for (var i=0; i < projects.length; i++) 
+        sel.append("<option value='" + projects[i].value + "' role='option' " + (projects[i].label == projlabel ? "selected" : "") + ">" + projects[i].label + "</option>");
+      sel.on("change", function(){
+        fillEditActivitySelect("", sel.val());
+      });
+      $("#project").replaceWith(sel);
+      fillEditActivitySelect("", sel.val());
+    });
+  }
+
+  function fillEditActivitySelect(actlabel, projid) {
+    $.get('/getactivities', {project:projid}, function(activities) {
+      var sel = $("<select id='activity' name='activity' role='select' />");
+      sel.attr("class", $("#activity").attr("class"));
+      for (var i=0; i < activities.length; i++) 
+        sel.append("<option value='" + activities[i].value + "' role='option' " + (activities[i].label == actlabel ? "selected" : "") + ">" + activities[i].label + "</option>");
+      $("#activity").replaceWith(sel);
+    });
   }
 
 
@@ -102,11 +151,17 @@ $(document).ready(function(){
 
 
 
+  function customerList(value, options) {
+    var el = $("<select />").append("<option>Deportivo</option>").append("<option>B</option>").append("<option>C</option>").val(value);
+    return el.get(0);
+  }
 
-
-
-
-
+  function customerValue(elem, operation, value) {
+    if (operation === "get")
+      return $(elem).val();
+    else if (operation === "set")
+      return $(elem).val(value);
+  }
 
   function setupAutoComplete(input, source, nextinput) {
     if (input.hasClass("ui-autocomplete-input"))

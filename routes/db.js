@@ -25,7 +25,7 @@ module.exports.getTimes = function(req, res) {
   }
   var start = maxnof*(page - 1);
 
-  var sql = "select t.id, c.name as customer, p.name as project, a.name as activity, t.description, t.starttime, t.endtime, t.elapsedtime  " + 
+  var sql = "select t.id, c.name as customer, p.name as project, a.name as activity, t.description, t.starttime as startdate, t.starttime, t.endtime, t.elapsedtime  " + 
     "from times.rawtimes t " +
     "inner join times.activities a on a.id=t.activityid " +
     "inner join times.projects p on p.id=a.projectid " +
@@ -47,6 +47,21 @@ module.exports.getTimes = function(req, res) {
 };
 
 
+//customer=162&project=1417&activity=9676&description=&startdate=2014-05-12&starttime=22%3A00&endtime=22%3A00&elapsedtime=540&oper=edit&id=15083
+
+module.exports.saveTime = function(req, res) {
+/*  var sql = "update rawtimes set " +
+    "activityid=" + req.query.activity + "," +
+    "description='" + req.query.description + "'," + 
+    ""
+  dbconnection.query("select id as value, name as label from customers order by name", function(err, rows) {
+    if (err) console.log(err);
+  
+  });*/
+};
+
+
+
 /*** Get customers list. No parameters **/
 module.exports.getCustomers = function(req, res) {
   dbconnection.query("select id as value, name as label from customers order by name", function(err, rows) {
@@ -59,8 +74,14 @@ module.exports.getCustomers = function(req, res) {
 /*** Get projects list. Parameter customer **/
 module.exports.getProjects = function(req, res) {
   var customer = req.query.customer;
-  if (!customer) customer = 0;
-  dbconnection.query("select id as value, name as label from projects where customerid=" + customer + " order by name", function(err, rows) {
+  var sql = "select " +
+     "p.id as value, p.name as label " +
+     "from projects p " +
+     "inner join customers c on " +
+     "c.id = p.customerid " +
+     "where c.name='" + customer + "' " +
+     "order by p.name";
+  dbconnection.query(sql, function(err, rows) {
     if (err) console.log(err);
     res.json(rows);
   });
@@ -71,11 +92,17 @@ module.exports.getProjects = function(req, res) {
 /*** Get activities list. Parameter project **/
 module.exports.getActivities = function(req, res) {
   var project = req.query.project;
-  if (!project) project = 0;
   var user = req.session.loggedinUser;
-  if (!user) user='me';
-  console.log("select id as value, name as label from activities where projectid=" + project + " and username='" + user + "' order by name");
-  dbconnection.query("select id as value, name as label from activities where projectid=" + project + " and username='" + user + "' order by name", function(err, rows) {
+  user = 'me';
+  var sql = "select " +
+     "a.id as value, a.name as label " + 
+     "from activities a " +
+     "inner join projects p on " +
+     "p.id = a.projectid " +
+     "where p.name='" + project + "' and " +
+     "a.username = '" + user + "' " +
+     "order by p.name";
+  dbconnection.query(sql, function(err, rows) {
     if (err) console.log(err);
     res.json(rows);
   });

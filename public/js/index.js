@@ -1,11 +1,11 @@
 $(document).ready(function(){
 
-  var customers = {};
+  var customersxx = {};
 
   function init() {
     $.get('/getcustomers', {}, function(cust) {
       for (var i=0; i < cust.length; i++)
-        customers[cust[i].value] = cust[i].label;
+        customersxx[cust[i].value] = cust[i].label;
       initGrid();
     });
     $("#combotest").select2({
@@ -38,11 +38,11 @@ $(document).ready(function(){
   function initGrid() {
     $("#timesgrid").jqGrid({
       url:'/gettimes',
-      editurl:'/xx',
+      editurl:'/saveedittime',
       autowidth:true,
       postData: {
         idcol:"_id",
-        cols:"id,customer,project,activity,description,starttime,starttime,endtime,elapsedtime"
+        cols:"id,customer,project,activity,description,startdate,starttime,endtime,elapsedtime"
       },
       colNames: ['','Kund', 'Projekt', 'Aktivitet', 'Beskrivning', 'Datum', 'Starttid', 'Sluttid', 'Tidsåtgång'],
       colModel:[
@@ -51,23 +51,34 @@ $(document).ready(function(){
           name:'customer', width:'10%', 
           sortable:true, editable:true, edittype:"select", 
           editoptions: {
-            value: customers,
+            value: "0:",
             dataEvents: [{
               type:"change",
-              fn: fillEditProjectSelect
+              fn: function(){
+                fillEditProjectsDropown($("#customer option:selected").text());
+              }
             }]
           }
         },
         {
           name:'project', width:'10%', 
-          sortable:true, editable:true, edittype:"text"
+          sortable:true, editable:true, edittype:"select",
+          editoptions: {
+            value: "0:",
+            dataEvents: [{
+              type:"change",
+              fn: function(){
+                fillEditActivitiesDropown($("#project option:selected").text());
+              }
+            }]
+          }
         },
         {
           name:'activity', width:'10%', 
-          sortable:true, editable:true, edittype:"text"
+          sortable:true, editable:true, edittype:"select", editoptions:{value: "0:"}
         },
         {name:'description', width:'15%', sortable:true, editable:true },
-        {name:'starttime', width:'5%', 
+        {name:'startdate', width:'5%', 
           searchoptions:{
             dataInit: function(elem) {
               $(elem).datepicker({dateFormat:'yy-mm-dd'});
@@ -89,8 +100,8 @@ $(document).ready(function(){
           }
         }
       ],
-      gridComplete: function(){
-
+      onSelectRow:function(rowid, status, e) {
+        fillEditCustomersDropown();
       },
       datatype: "json",
       altRows:false,
@@ -107,9 +118,9 @@ $(document).ready(function(){
       {edit:true,add:false,del:false},
       {
         onInitializeForm: function(){
-          fillEditProjectSelect($("#project").val());
-        },
-        width:"auto"
+          fillEditCustomersDropown();
+        },            
+        width:"auto" 
       },            
       {},
       {},
@@ -118,32 +129,37 @@ $(document).ready(function(){
 
   }
 
-  function fillEditProjectSelect(projlabel) {
-    $.get('/getprojects', {customer:$("#customer").val()}, function(projects) {
-      var sel = $("<select id='project' name='project' role='select' />");
-      sel.attr("class", $("#project").attr("class"));
+  function fillEditCustomersDropown() {
+    var rowid = $("#timesgrid").jqGrid ('getGridParam', 'selrow');
+    var currcust = $("#timesgrid").jqGrid("getCell", rowid, "customer");
+    $.get('/getcustomers', {}, function(customers) {
+      var sel = $("select#customer").empty(); 
+      for (var i=0; i < customers.length; i++) 
+        sel.append("<option value='" + customers[i].value + "' role='option' " + (customers[i].label == currcust ? "selected" : "") + ">" + customers[i].label + "</option>");
+      fillEditProjectsDropown(currcust);
+    });
+  }
+
+  function fillEditProjectsDropown(currcust) {
+    var rowid = $("#timesgrid").jqGrid ('getGridParam', 'selrow');
+    var currproj = $("#timesgrid").jqGrid("getCell", rowid, "project");
+    $.get('/getprojects', {customer:currcust}, function(projects) {
+      var sel = $("select#project").empty(); 
       for (var i=0; i < projects.length; i++) 
-        sel.append("<option value='" + projects[i].value + "' role='option' " + (projects[i].label == projlabel ? "selected" : "") + ">" + projects[i].label + "</option>");
-      sel.on("change", function(){
-        fillEditActivitySelect("", sel.val());
-      });
-      $("#project").replaceWith(sel);
-      fillEditActivitySelect("", sel.val());
+        sel.append("<option value='" + projects[i].value + "' role='option' " + (projects[i].label == currproj ? "selected" : "") + ">" + projects[i].label + "</option>");
+      fillEditActivitiesDropown(currproj);
     });
   }
 
-  function fillEditActivitySelect(actlabel, projid) {
-    $.get('/getactivities', {project:projid}, function(activities) {
-      var sel = $("<select id='activity' name='activity' role='select' />");
-      sel.attr("class", $("#activity").attr("class"));
+  function fillEditActivitiesDropown(currproj) {
+    var rowid = $("#timesgrid").jqGrid ('getGridParam', 'selrow');
+    var curract = $("#timesgrid").jqGrid("getCell", rowid, "activity");
+    $.get('/getactivities', {project:currproj}, function(activities) {
+      var sel = $("select#activity").empty(); 
       for (var i=0; i < activities.length; i++) 
-        sel.append("<option value='" + activities[i].value + "' role='option' " + (activities[i].label == actlabel ? "selected" : "") + ">" + activities[i].label + "</option>");
-      $("#activity").replaceWith(sel);
+        sel.append("<option value='" + activities[i].value + "' role='option' " + (activities[i].label == curract ? "selected" : "") + ">" + activities[i].label + "</option>");
     });
   }
-
-
-
 
 
 

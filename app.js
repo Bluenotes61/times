@@ -37,6 +37,7 @@ app.get("/", mainpage.index);
 
 /*** Ajax functions ***/
 app.get("/gettimes", db.getTimes);
+app.get("/saveedittime", db.saveTime);
 
 app.get("/getcustomers", db.getCustomers);
 app.get("/getprojects", db.getProjects);

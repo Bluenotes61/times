@@ -1,30 +1,31 @@
 $(document).ready(function(){
 
-  var customersxx = {};
-
   function init() {
+
+    $("#customerTest").on("change", function(){
+      alert(this.value);
+    });
+
     $.get('/getcustomers', {}, function(cust) {
-      for (var i=0; i < cust.length; i++)
-        customersxx[cust[i].value] = cust[i].label;
-      initGrid();
+      var customers = $("#customerTest");
+
+      for (var i=0; i < cust.length; i++){
+        customers.append ("<option value='" + cust[i].value + "'>" + cust[i].label + "</option>");
+      }
+
+      //customers.appendTo("#customerTest");
     });
-    $("#combotest").select2({
-      placeholder: "Projekt",
-      allowClear: true
+
+    /*
+    $.get('/getcustomers', {}, function(customers) {
+      var sel = $("select#customer").empty();
+      for (var i=0; i < customers.length; i++)
+        sel.append("<option value='" + customers[i].value + "' role='option' " + (customers[i].label == currcust ? "selected" : "") + ">" + customers[i].label + "</option>");
+      fillEditProjectsDropown(currcust);
     });
-    $("#combotest2").select2({
-      placeholder: "Projekt2",
-      allowClear: true,
-      createSearchChoice: function(term, data) {
-        if ( 
-          $(data).filter( function() {
-            return this.text.localeCompare(term)===0;
-          }).length === 0) {
-          return {id:term, text:term};
-        }
-      },
-      data:projData
-    });
+    */
+    initGrid();
+
   }
     var src = {results:[{id:0,text:'aaa'}, {id:1,text:'bbb'}, {id:2,text:'xxx'}]};
     /*setTimeout(function(){
@@ -48,8 +49,8 @@ $(document).ready(function(){
       colModel:[
         {name:'id', hidden:true },
         {
-          name:'customer', width:'10%', 
-          sortable:true, editable:true, edittype:"select", 
+          name:'customer', width:'10%',
+          sortable:true, editable:true, edittype:"select",
           editoptions: {
             value: "0:",
             dataEvents: [{
@@ -61,7 +62,7 @@ $(document).ready(function(){
           }
         },
         {
-          name:'project', width:'10%', 
+          name:'project', width:'10%',
           sortable:true, editable:true, edittype:"select",
           editoptions: {
             value: "0:",
@@ -74,11 +75,11 @@ $(document).ready(function(){
           }
         },
         {
-          name:'activity', width:'10%', 
+          name:'activity', width:'10%',
           sortable:true, editable:true, edittype:"select", editoptions:{value: "0:"}
         },
         {name:'description', width:'15%', sortable:true, editable:true },
-        {name:'startdate', width:'5%', 
+        {name:'startdate', width:'5%',
           searchoptions:{
             dataInit: function(elem) {
               $(elem).datepicker({dateFormat:'yy-mm-dd'});
@@ -89,12 +90,12 @@ $(document).ready(function(){
               $(elem).datepicker({dateFormat:'yy-mm-dd'});
             }
           },
-          sortable:true, editable:true, formatter:'date', 
+          sortable:true, editable:true, formatter:'date',
           formatoptions:{srcformat: 'Y-m-d H:i:s', newformat: 'Y-m-d' }
         },
         {name:'starttime', width:'5%', search:false, sortable:false, editable:true, formatter:'date', formatoptions:{srcformat: 'Y-m-d H:i:s', newformat: 'H:i' }},
         {name:'endtime', width:'5%', search:false, sortable:false, editable:true, sorttype:'date', formatter:'date', formatoptions:{srcformat: 'Y-m-d H:i:s', newformat: 'H:i' }},
-        {name:'elapsedtime', width:'7%', search:false, sortable:true, editable:true, formatter:formatElapsed, unformat:unformatElapsed, 
+        {name:'elapsedtime', width:'7%', search:false, sortable:true, editable:true, formatter:formatElapsed, unformat:unformatElapsed,
           formoptions:{
             elmsuffix:'&nbsp;&nbsp;minuter'
           }
@@ -119,9 +120,9 @@ $(document).ready(function(){
       {
         onInitializeForm: function(){
           fillEditCustomersDropown();
-        },            
-        width:"auto" 
-      },            
+        },
+        width:"auto"
+      },
       {},
       {},
       {multipleSearch:true}
@@ -133,8 +134,8 @@ $(document).ready(function(){
     var rowid = $("#timesgrid").jqGrid ('getGridParam', 'selrow');
     var currcust = $("#timesgrid").jqGrid("getCell", rowid, "customer");
     $.get('/getcustomers', {}, function(customers) {
-      var sel = $("select#customer").empty(); 
-      for (var i=0; i < customers.length; i++) 
+      var sel = $("select#customer").empty();
+      for (var i=0; i < customers.length; i++)
         sel.append("<option value='" + customers[i].value + "' role='option' " + (customers[i].label == currcust ? "selected" : "") + ">" + customers[i].label + "</option>");
       fillEditProjectsDropown(currcust);
     });
@@ -144,8 +145,8 @@ $(document).ready(function(){
     var rowid = $("#timesgrid").jqGrid ('getGridParam', 'selrow');
     var currproj = $("#timesgrid").jqGrid("getCell", rowid, "project");
     $.get('/getprojects', {customer:currcust}, function(projects) {
-      var sel = $("select#project").empty(); 
-      for (var i=0; i < projects.length; i++) 
+      var sel = $("select#project").empty();
+      for (var i=0; i < projects.length; i++)
         sel.append("<option value='" + projects[i].value + "' role='option' " + (projects[i].label == currproj ? "selected" : "") + ">" + projects[i].label + "</option>");
       fillEditActivitiesDropown(currproj);
     });
@@ -155,8 +156,8 @@ $(document).ready(function(){
     var rowid = $("#timesgrid").jqGrid ('getGridParam', 'selrow');
     var curract = $("#timesgrid").jqGrid("getCell", rowid, "activity");
     $.get('/getactivities', {project:currproj}, function(activities) {
-      var sel = $("select#activity").empty(); 
-      for (var i=0; i < activities.length; i++) 
+      var sel = $("select#activity").empty();
+      for (var i=0; i < activities.length; i++)
         sel.append("<option value='" + activities[i].value + "' role='option' " + (activities[i].label == curract ? "selected" : "") + ">" + activities[i].label + "</option>");
     });
   }
@@ -234,5 +235,5 @@ $(document).ready(function(){
   }
 
   init();
-  
+
 });

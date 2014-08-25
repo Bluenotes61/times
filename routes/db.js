@@ -3,10 +3,10 @@
 var mysql = require('mysql');
 var dbconnection = mysql.createConnection({
   host     : 'localhost',
-  user     : 'webuser',
-  password : 'webuser',
+  user     : 'root',
+  password : '',
   database : 'times'
-});  
+});
 
 
 /*** Get jqgrid data ***/
@@ -25,12 +25,12 @@ module.exports.getTimes = function(req, res) {
   }
   var start = maxnof*(page - 1);
 
-  var sql = "select t.id, c.name as customer, p.name as project, a.name as activity, t.description, t.starttime as startdate, t.starttime, t.endtime, t.elapsedtime  " + 
+  var sql = "select t.id, c.name as customer, p.name as project, a.name as activity, t.description, t.starttime as startdate, t.starttime, t.endtime, t.elapsedtime  " +
     "from times.rawtimes t " +
     "inner join times.activities a on a.id=t.activityid " +
     "inner join times.projects p on p.id=a.projectid " +
-    "inner join times.customers c on c.id=p.customerid " + 
-    "where t.username='" + username + "'" + 
+    "inner join times.customers c on c.id=p.customerid " +
+    "where t.username='" + username + "'" +
     "order by " + sortcol + " " + sortorder;
 
   dbconnection.query(sql, function(err, rows) {
@@ -52,11 +52,11 @@ module.exports.getTimes = function(req, res) {
 module.exports.saveTime = function(req, res) {
 /*  var sql = "update rawtimes set " +
     "activityid=" + req.query.activity + "," +
-    "description='" + req.query.description + "'," + 
+    "description='" + req.query.description + "'," +
     ""
   dbconnection.query("select id as value, name as label from customers order by name", function(err, rows) {
     if (err) console.log(err);
-  
+
   });*/
 };
 
@@ -95,7 +95,7 @@ module.exports.getActivities = function(req, res) {
   var user = req.session.loggedinUser;
   user = 'me';
   var sql = "select " +
-     "a.id as value, a.name as label " + 
+     "a.id as value, a.name as label " +
      "from activities a " +
      "inner join projects p on " +
      "p.id = a.projectid " +
@@ -105,5 +105,13 @@ module.exports.getActivities = function(req, res) {
   dbconnection.query(sql, function(err, rows) {
     if (err) console.log(err);
     res.json(rows);
+  });
+};
+
+module.exports.loginUser = function(username, password, callback){
+  var sql = "select username from users where username ='" + username + "' AND password = '" + password + "'";
+  dbconnection.query(sql, function(err, rows) {
+    if (err) console.log(err);
+    callback(rows.length > 0);
   });
 };

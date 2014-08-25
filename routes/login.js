@@ -7,8 +7,8 @@ exports.index = function(req, res) {
 
 exports.post = function(req, res) {
   var b = req.body;
-  db.loginUser(b.username, b.password, function(err) {
-    if (err.length == 0) {
+  db.loginUser(b.username, b.password, function(ok) {
+    if (ok) {
       req.session.loggedinUser = b.username;
       res.redirect("/");
     }

@@ -70,16 +70,16 @@ module.exports.getCustomers = function(req, res) {
   });
 };
 
-
 /*** Get projects list. Parameter customer **/
 module.exports.getProjects = function(req, res) {
   var customer = req.query.customer;
+  console.log(customer);
   var sql = "select " +
      "p.id as value, p.name as label " +
      "from projects p " +
      "inner join customers c on " +
      "c.id = p.customerid " +
-     "where c.name='" + customer + "' " +
+     "where c.id=" + customer + " " +
      "order by p.name";
   dbconnection.query(sql, function(err, rows) {
     if (err) console.log(err);
@@ -99,7 +99,7 @@ module.exports.getActivities = function(req, res) {
      "from activities a " +
      "inner join projects p on " +
      "p.id = a.projectid " +
-     "where p.name='" + project + "' and " +
+     "where p.id='" + project + "' and " +
      "a.username = '" + user + "' " +
      "order by p.name";
   dbconnection.query(sql, function(err, rows) {

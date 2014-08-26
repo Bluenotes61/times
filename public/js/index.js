@@ -3,7 +3,14 @@ $(document).ready(function(){
   function init() {
 
     $("#customerTest").on("change", function(){
-      alert(this.value);
+
+      $.get('/getprojects', {customer: $(this).val()}, function(proj) {
+        var projDown = $("#customerProjects").empty().append("<option></option>");
+        for (var i=0; i < proj.length; i++){
+          projDown.append ("<option value='" + proj[i].value + "'>" + proj[i].label + "</option>");
+        }
+      });
+
     });
 
     $.get('/getcustomers', {}, function(cust) {

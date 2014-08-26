@@ -13,17 +13,8 @@ $(document).ready(function(){
         customers.append ("<option value='" + cust[i].value + "'>" + cust[i].label + "</option>");
       }
 
-      //customers.appendTo("#customerTest");
     });
 
-    /*
-    $.get('/getcustomers', {}, function(customers) {
-      var sel = $("select#customer").empty();
-      for (var i=0; i < customers.length; i++)
-        sel.append("<option value='" + customers[i].value + "' role='option' " + (customers[i].label == currcust ? "selected" : "") + ">" + customers[i].label + "</option>");
-      fillEditProjectsDropown(currcust);
-    });
-    */
     initGrid();
 
   }

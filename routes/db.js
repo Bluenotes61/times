@@ -3,16 +3,16 @@
 var mysql = require('mysql');
 var dbconnection = mysql.createConnection({
   host     : 'localhost',
-  user     : 'root',
-  password : '',
+  user     : 'webuser',
+  password : 'n0ll.fyra.n0ll',
   database : 'times'
+  //,timezone : 'utc'
 });
 
 
 /*** Get jqgrid data ***/
-
 module.exports.getTimes = function(req, res) {
-  var username = "me";
+  var user = req.session.loggedinUser;
   var page = req.query.page;
   var maxnof = req.query.rows;
   var sortcol = req.query.sidx;
@@ -25,12 +25,12 @@ module.exports.getTimes = function(req, res) {
   }
   var start = maxnof*(page - 1);
 
-  var sql = "select t.id, c.name as customer, p.name as project, a.name as activity, t.description, t.starttime as startdate, t.starttime, t.endtime, t.elapsedtime  " +
+  var sql = "select t.id, c.name as customer, p.name as project, a.name as activity, t.comment, t.starttime as startdate, t.starttime, t.endtime, t.elapsedtime  " +
     "from times.rawtimes t " +
     "inner join times.activities a on a.id=t.activityid " +
     "inner join times.projects p on p.id=a.projectid " +
     "inner join times.customers c on c.id=p.customerid " +
-    "where t.username='" + username + "'" +
+    "where t.username='" + user + "' and not elapsedtime is null and paused <> 1 " +
     "order by " + sortcol + " " + sortorder;
 
   dbconnection.query(sql, function(err, rows) {
@@ -47,22 +47,32 @@ module.exports.getTimes = function(req, res) {
 };
 
 
-//customer=162&project=1417&activity=9676&description=&startdate=2014-05-12&starttime=22%3A00&endtime=22%3A00&elapsedtime=540&oper=edit&id=15083
-
+/*** Save an edited registration from grid or delete a registration ***/
 module.exports.saveTime = function(req, res) {
-/*  var sql = "update rawtimes set " +
-    "activityid=" + req.query.activity + "," +
-    "description='" + req.query.description + "'," +
-    ""
-  dbconnection.query("select id as value, name as label from customers order by name", function(err, rows) {
-    if (err) console.log(err);
-
-  });*/
+  if (req.body.oper == "del") {
+    dbconnection.query("delete from rawtimes where id=" + req.body.id, function(err, rows) {
+      if (err) console.log(err);
+      res.json({});
+    });
+  }
+  else if (req.body.oper == "edit") {
+    var starttime = new Date(req.body.startdate + " " + req.body.starttime);
+    var endtime = new Date(starttime.getTime() + req.body.elapsedtime*60000);
+    var sql = "update rawtimes set " +
+      "activityid=" + req.body.activity + "," +
+      "comment='" + req.body.comment + "'," +
+      "starttime='" + timeToString(starttime) + "'," +
+      "endtime='" + timeToString(endtime) + "'," +
+      "elapsedtime=" + req.body.elapsedtime + " " +
+      "where id=" + req.body.id;
+    dbconnection.query(sql, function(err, rows) {
+      if (err) console.log(err);
+      res.json({});
+    });
+  }
 };
 
-
-
-/*** Get customers list. No parameters **/
+/*** Get customers data. No parameters **/
 module.exports.getCustomers = function(req, res) {
   dbconnection.query("select id as value, name as label from customers order by name", function(err, rows) {
     if (err) console.log(err);
@@ -70,17 +80,19 @@ module.exports.getCustomers = function(req, res) {
   });
 };
 
-/*** Get projects list. Parameter customer **/
+/*** Get projects data. Parameters: byname, customer ***/
 module.exports.getProjects = function(req, res) {
   var customer = req.query.customer;
-  console.log(customer);
   var sql = "select " +
-     "p.id as value, p.name as label " +
-     "from projects p " +
-     "inner join customers c on " +
-     "c.id = p.customerid " +
-     "where c.id=" + customer + " " +
-     "order by p.name";
+    "p.id as value, p.name as label " +
+    "from projects p " +
+    "inner join customers c on " +
+    "c.id = p.customerid ";
+  if (req.query.byname)
+    sql += "where c.name='" + customer + "' ";
+  else
+    sql += "where c.id=" + customer + " ";
+  sql += "order by p.name";
   dbconnection.query(sql, function(err, rows) {
     if (err) console.log(err);
     res.json(rows);
@@ -88,25 +100,172 @@ module.exports.getProjects = function(req, res) {
 };
 
 
-
-/*** Get activities list. Parameter project **/
+/*** Get activities data. Parameters: byname, project **/
 module.exports.getActivities = function(req, res) {
   var project = req.query.project;
   var user = req.session.loggedinUser;
-  user = 'me';
   var sql = "select " +
-     "a.id as value, a.name as label " +
-     "from activities a " +
-     "inner join projects p on " +
-     "p.id = a.projectid " +
-     "where p.id='" + project + "' and " +
-     "a.username = '" + user + "' " +
+    "a.id as value, a.name as label " +
+    "from activities a " +
+    "inner join projects p on " +
+    "p.id = a.projectid ";
+  if (req.query.byname)
+    sql += "where p.name='" + project + "' and ";
+  else
+    sql += "where p.id=" + project + " and ";
+  sql += "a.username = '" + user + "' " +
      "order by p.name";
   dbconnection.query(sql, function(err, rows) {
     if (err) console.log(err);
     res.json(rows);
   });
 };
+
+
+/*** Start time count for an active avtivity ***/
+module.exports.startActivity = function(req, res) {
+  var customerid = req.query.customerid;
+  var projectid = req.query.projectid;
+  var activityid = req.query.activityid;
+  var comment = req.query.comment;
+  var starttime = timeToString(new Date(req.query.starttime));
+  var user = req.session.loggedinUser;
+  var sql = "insert into rawtimes " + 
+    "(username, activityid, comment, starttime) " +
+    "values ('" + user + "', " + activityid + ", '" + comment + "', '" + starttime + "')"; 
+  dbconnection.query(sql, function(err, result) {
+    if (err) console.log(err);
+    var newid = result.insertId;
+    getPausedElapsed(user, activityid, newid, function(elapsed){
+      res.json({newid:result.insertId, elapsed:elapsed});
+    });
+  });
+};
+
+
+/*** Stop time count for the active avtivity and save elapsed time ***/
+module.exports.stopActivity = function(req, res) {
+  if (req.query.paused != 1) { 
+    dbconnection.query("update rawtimes set paused=0 where username='" + req.session.loggedinUser + "'", function(err, result) {
+      if (err) console.log(err);
+    });
+  }
+  var starttime = new Date(req.query.starttime);
+  var stoptime = new Date(req.query.stoptime);
+  var elapsed = parseInt((stoptime - starttime)/60000, 10);
+  if (elapsed > 0) {
+    var sql = "update rawtimes " + 
+      "set elapsedtime=" + elapsed + ", " +
+      "paused=" + req.query.paused + " " +
+      "where id=" + req.query.id;
+    dbconnection.query(sql, function(err, result) {
+      if (err) console.log(err);
+      res.json({elapsed:elapsed});
+    });
+  }
+  else {
+    var sql = "delete from rawtimes where id=" + req.query.id;
+    dbconnection.query(sql, function(err, result) {
+      if (err) console.log(err);
+      res.json({elapsed:elapsed});
+    });
+  }
+}; 
+
+
+/*** Register an activity ***/
+module.exports.registerActivity = function(req, res) {
+  var customerid = req.query.customerid;
+  var projectid = req.query.projectid;
+  var activityid = req.query.activityid;
+  var comment = req.query.comment;
+  var adate = req.query.activitydate;
+  var hours = parseInt(req.query.hours, 10);
+  var minutes = parseInt(req.query.minutes, 10);
+  var elapsed = hours*60 + minutes;
+  var user = req.session.loggedinUser;
+  var sql = "insert into rawtimes " + 
+    "(username, activityid, comment, starttime, elapsedtime, paused) " +
+    "values ('" + user + "', " + activityid + ", '" + comment + "', '" + adate + "', " + elapsed + ", 0)"; 
+  dbconnection.query(sql, function(err, result) {
+    if (err) console.log(err);
+    res.json({});
+  });
+};
+
+
+/*** Get the currently active avtivity from the database ***/
+module.exports.getActiveActivity = function(req, res) {
+  var user = req.session.loggedinUser;
+  var sql = "select c.name as customer, a.id as cid, p.name as project, p.id as pid, a.name as activity, a.id as aid, rt.id as id, rt.starttime, rt.comment, rt.paused " +
+    "from times.rawtimes rt " +
+    "inner join times.activities a on " +
+    "a.id=rt.activityid " +
+    "inner join projects p on " +
+    "p.id=a.projectid " +
+    "inner join times.customers c on " +
+    "c.id=p.customerid " +
+    "where rt.username='" + user + "' and (rt.elapsedtime is null or rt.paused=1) " +
+    "order by rt.id desc";
+  dbconnection.query(sql, function(err, rows) {
+    if (err) console.log(err);
+    if (rows.length > 0) {
+      rows[0].pausedElapsed = 0;
+      if (rows[0].paused == 1) {
+        getPausedElapsed(user, rows[0].aid, rows[0].id, function(elapsed){
+          rows[0].pausedElapsed = elapsed;
+          res.json(rows[0]);
+        });
+      }
+      else 
+        res.json(rows[0]);
+    }
+    else
+      res.json(null);
+  });
+};
+
+function getPausedElapsed(user, actid, rtid, callback) { 
+  var sum = 0;
+  var sql = "select activityid, elapsedtime from times.rawtimes where username='" + user + "' and id <= " + rtid + " and paused=1 order by id desc limit 0, 50";
+  dbconnection.query(sql, function(err, rows) {
+    if (err) console.log(err);
+    var i = 0;
+    while (i < rows.length && rows[i].activityid == actid) {
+      sum += (rows[i].elapsedtime == null ? 0 : rows[i].elapsedtime);
+      i++;
+    }
+    callback(sum);
+  });
+
+}
+
+/*** Get the 10 latest activities ***/
+module.exports.getLatestActivities = function(req, res) {
+  var user = req.session.loggedinUser;
+  var sql = "select distinct a.id as aid, a.name as aname, p.id as pid, p.name as pname, c.id as cid, c.name as cname " +
+    "from rawtimes rt " +
+    "inner join activities a on a.id=rt.activityid " +
+    "inner join projects p on p.id=a.projectid " +
+    "inner join customers c on c.id=p.customerid " +
+    "where rt.username='" + user + "' and not rt.elapsedtime is null " +
+    "order by rt.id desc limit 0, 10";
+  dbconnection.query(sql, function(err, rows) {
+    if (err) console.log(err);
+    res.json(rows);
+  });
+}
+
+
+
+/*** Convert a JS Date to database friendly format ****/
+function timeToString(atime) {
+  if (atime.length == 0) return atime;
+  var newtime = new Date(atime.getTime() - atime.getTimezoneOffset()*60000);
+  return newtime.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+}
+
+
 
 module.exports.loginUser = function(username, password, callback){
   var sql = "select username from users where username ='" + username + "' AND password = '" + password + "'";

@@ -1,5 +1,48 @@
-input.ui-autocomplete-input {
-  background-image: url(../gfx/ddarrow.png);
-  background-position: center right;
-  background-repeat: no-repeat;
+#booking {
+  max-width: 900px;
+}
+
+#booking .bookform {
+  float:left;
+  width:32%;
+  margin-right: 1%
+}
+
+#booking .bookform .row > * {
+  vertical-align: top;
+  display: inline-block;
+}
+#booking .bookform .row > h3 {
+  min-width: 100px;
+  width: 30%;
+}
+#booking .bookform .row > select,
+#booking .bookform .row > textarea {
+  width: 50%;
+}
+
+#booking .active .isactive {
+  display: none;
+}
+
+#booking .stopbuttons .restart {
+  display: none;
+}
+
+#booking .settimepop {
+  position: absolute;
+  display: none;
+  border:solid 1px #ccc;
+  background:#fff;
+  padding:10px;
+  z-index: 1000;
+}
+
+#booking .settimepop input,
+#booking .register .elapsed input {
+  width:40px;
+}
+#booking .settimepop span,
+#booking .register .elapsed span {
+  padding:0 5px;
 }

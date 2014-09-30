@@ -37,13 +37,17 @@ app.get("/", mainpage.index);
 
 /*** Ajax functions ***/
 app.get("/gettimes", db.getTimes);
-app.get("/saveedittime", db.saveTime);
+app.post("/saveedittime", db.saveTime);
 
 app.get("/getcustomers", db.getCustomers);
 app.get("/getprojects", db.getProjects);
 app.get("/getactivities", db.getActivities);
 
-
+app.get("/startactivity", db.startActivity);
+app.get("/stopactivity", db.stopActivity);
+app.get("/registeractivity", db.registerActivity);
+app.get("/getactiveactivity", db.getActiveActivity);
+app.get("/getlatestactivities", db.getLatestActivities);
 
 /// catch 404 and forwarding to error handler
 app.use(function(req, res, next) {

@@ -18,20 +18,107 @@
 
 <h1>{{title}}</h1>
 
-<h2>{{testing}}</h2>
+<div id='booking' class='clearfix'>
+  <div class='active bookform'>
+    <h2 class='headline'>Aktiv aktivitet</h2>
+    <div class='isactive'>
+      <div class='row'><h3>Kund:</h3><span class="customer"></span></div>
+      <div class='row'><h3>Projekt:</h3><span class="project"></span></div>
+      <div class='row'><h3>Aktivitet:</h3><span class="activity"></span></div>
+      <div class='row'><h3>Kommentar:</h3><span class='comment'></span></div>
+      <div class='row'><h3>Starttid:</h3><span class='starttime'></span></div>
+      <div class='row'><h3>Tidsåtgång:</h3><span class='elapsed'></span></div>
+      <div class='stopbuttons'>
+        <a class='pause'>Pausa aktivitet</a>
+        <a class='open'>Stoppa aktivitet</a>
+        <a class='restart'>Återuppta aktivitet</a>
+        <div class='stoptime settimepop'>
+          <h4>Tid för avslut</h4>
+          <div><input type='number' class='hours' min='0' max='23' /><span>:</span><input type='number' class='minutes' min='0' max='59' /></div>
+          <div><a class='stop'>Stoppa</a><a class='cancel'>Avbryt</a></div>
+        </div>
+      </div>
+    </div>
+    <div class='isnotactive'>
+      <h3>Ingen aktiv aktivitet</h3>
+    </div>
+  </div>
 
-<select id="customerTest">
-</select>
+  <div class='start bookform'>
+    <h2>Starta aktivitet</h2>
+    <div class='row'>
+      <h3>Senaste:</h3>
+      <select class="latest"></select>
+    </div>
+    <div class='row'>
+      <h3>Kund:</h3>
+      <select class="customer"></select>
+      <a class='delcustomer'>X</a>
+    </div>
+    <div class='row'>
+      <h3>Projekt:</h3>
+      <select class="project"></select>
+      <a class='delproject'>X</a>
+    </div>
+    <div class='row'>
+      <h3>Aktivitet:</h3>
+      <select class="activity"></select>
+      <a class='delactivity'>X</a>
+    </div>
+    <div class='row'>
+      <h3>Kommentar:</h3>
+      <textarea class='comment'></textarea>
+    </div>
+    <div class='startbuttons'>
+      <a class='open'>Starta aktivitet</a>
+      <div class='starttime settimepop'>
+        <h4>Tid för start</h4>
+        <div><input type='number' class='hours' min='0' max='23' /><span>:</span><input type='number' class='minutes' min='0' max='59' /></div>
+        <div><a class='start'>Starta</a><a class='cancel'>Avbryt</a></div>
+      </div>
+    </div>
+  </div>
 
-<select id="customerProjects">
-</select>
-
-<div id="combotest2"></div>
+  <div class='register bookform'>
+    <h2>Registrera aktivitet</h2>
+    <div class='row'>
+      <h3>Senaste:</h3>
+      <select class="latest"></select>
+    </div>
+    <div class='row'>
+      <h3>Kund:</h3>
+      <select class="customer"></select>
+      <a class='delcustomer'>X</a>
+    </div>
+    <div class='row'>
+      <h3>Projekt:</h3>
+      <select class="project"></select>
+      <a class='delproject'>X</a>
+    </div>
+    <div class='row'>
+      <h3>Aktivitet:</h3>
+      <select class="activity"></select>
+      <a class='delactivity'>X</a>
+    </div>
+    <div class='row'>
+      <h3>Kommentar:</h3>
+      <textarea class='comment'></textarea>
+    </div>
+    <div class='row activitydate'>
+      <h3>Datum:</h3>
+      <input type='text' class='adate' />
+    </div>
+    <div class='row elapsed'>
+      <h3>Tidsåtgång</h3>
+      <input type='number' class='hours' min='0' max='23' /><span>:</span><input type='number' class='minutes' min='0' max='59' />
+    </div>
+    <div class='regbuttons'>
+      <a class='register'>Spara aktivitet</a>
+    </div>
+  </div>
+</div>
 
 
 <h2>Senaste aktiviteter</h2>
-<div class='latest'>
-</div>
-
 <table id="timesgrid"></table>
 <div id="timesctrl"></div>

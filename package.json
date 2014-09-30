@@ -16,7 +16,7 @@
     "method-override": "*",
     "static":"*",
     "express-session":"*",
-    "mongoose":"*"
+    "dateformat":"*"
   },
   "devDependencies": {
     "nodemon": "*"

@@ -1,5 +1,6 @@
 /** Ajax functions and db access ***/
 
+/*** Initialize database connection ***/
 var mysql = require('mysql');
 var dbconnection = mysql.createConnection({
   host     : 'localhost',
@@ -25,7 +26,7 @@ module.exports.getTimes = function(req, res) {
   }
   var start = maxnof*(page - 1);
 
-  var sql = "select t.id, c.name as customer, p.name as project, a.name as activity, t.comment, t.starttime as startdate, t.starttime, t.endtime, t.elapsedtime  " +
+  var sql = "select t.id, c.name as customer, p.name as project, a.name as activity, t.comment, t.starttime as startdate, t.starttime, t.elapsedtime  " +
     "from times.rawtimes t " +
     "inner join times.activities a on a.id=t.activityid " +
     "inner join times.projects p on p.id=a.projectid " +
@@ -62,7 +63,6 @@ module.exports.saveTime = function(req, res) {
       "activityid=" + req.body.activity + "," +
       "comment='" + req.body.comment + "'," +
       "starttime='" + timeToString(starttime) + "'," +
-      "endtime='" + timeToString(endtime) + "'," +
       "elapsedtime=" + req.body.elapsedtime + " " +
       "where id=" + req.body.id;
     dbconnection.query(sql, function(err, rows) {
@@ -71,17 +71,46 @@ module.exports.saveTime = function(req, res) {
     });
   }
 };
+ 
+
+/*** Get the 10 latest activities ***/
+module.exports.getLatestActivities = function(req, res) {
+  if (!req.session.loggedinUser) { 
+    res.json({data:[], err:"Logged out"});
+    return;
+  }
+  var user = req.session.loggedinUser;
+  var sql = "select distinct a.id as aid, a.name as aname, p.id as pid, p.name as pname, c.id as cid, c.name as cname " +
+    "from rawtimes rt " +
+    "inner join activities a on a.id=rt.activityid " +
+    "inner join projects p on p.id=a.projectid " +
+    "inner join customers c on c.id=p.customerid " +
+    "where a.deleted=0 and rt.username='" + user + "' and not rt.elapsedtime is null " +
+    "order by rt.id desc limit 0, 10";
+  dbconnection.query(sql, function(err, rows) {
+    if (err) console.log(err);
+    res.json({data:rows, err:err});
+  });
+}
 
 /*** Get customers data. No parameters **/
 module.exports.getCustomers = function(req, res) {
-  dbconnection.query("select id as value, name as label from customers order by name", function(err, rows) {
+  if (!req.session.loggedinUser) { 
+    res.json({data:[], err:"Logged out"});
+    return;
+  }
+  dbconnection.query("select id as value, name as label from customers where deleted=0 order by name", function(err, rows) {
     if (err) console.log(err);
-    res.json(rows);
+    res.json({data:rows, err:err});
   });
 };
 
 /*** Get projects data. Parameters: byname, customer ***/
 module.exports.getProjects = function(req, res) {
+  if (!req.session.loggedinUser) { 
+    res.json({data:[], err:"Logged out"});
+    return;
+  }
   var customer = req.query.customer;
   var sql = "select " +
     "p.id as value, p.name as label " +
@@ -91,17 +120,21 @@ module.exports.getProjects = function(req, res) {
   if (req.query.byname)
     sql += "where c.name='" + customer + "' ";
   else
-    sql += "where c.id=" + customer + " ";
+    sql += "where p.deleted=0 and c.id=" + customer + " ";
   sql += "order by p.name";
   dbconnection.query(sql, function(err, rows) {
     if (err) console.log(err);
-    res.json(rows);
+    res.json({data:rows, err:err});
   });
 };
 
 
 /*** Get activities data. Parameters: byname, project **/
 module.exports.getActivities = function(req, res) {
+  if (!req.session.loggedinUser) { 
+    res.json({data:[], err:"Logged out"});
+    return;
+  }
   var project = req.query.project;
   var user = req.session.loggedinUser;
   var sql = "select " +
@@ -112,35 +145,66 @@ module.exports.getActivities = function(req, res) {
   if (req.query.byname)
     sql += "where p.name='" + project + "' and ";
   else
-    sql += "where p.id=" + project + " and ";
+    sql += "where a.deleted=0 and p.id=" + project + " and ";
   sql += "a.username = '" + user + "' " +
      "order by p.name";
   dbconnection.query(sql, function(err, rows) {
     if (err) console.log(err);
-    res.json(rows);
+    res.json({data:rows, err:err});
   });
 };
 
 
 /*** Start time count for an active avtivity ***/
 module.exports.startActivity = function(req, res) {
-  var customerid = req.query.customerid;
   var projectid = req.query.projectid;
   var activityid = req.query.activityid;
   var comment = req.query.comment;
   var starttime = timeToString(new Date(req.query.starttime));
   var user = req.session.loggedinUser;
-  var sql = "insert into rawtimes " + 
+
+  if (activityid == 0) { // Use an empty activity if not specified
+    getEmptyActivity(user, projectid, function(id){
+      activityid = id;
+      doStartActivity(user, activityid, comment, starttime, function(result){
+        res.json(result);
+      });
+    });
+  }
+  else {
+    doStartActivity(user, activityid, comment, starttime, function(result){
+      res.json(result);
+    });
+  }
+};
+
+/*** Start activity by adding a rawtimes post ***/
+function doStartActivity(user, activityid, comment, starttime, callback) {
+  var sql = "insert into times.rawtimes " + 
     "(username, activityid, comment, starttime) " +
     "values ('" + user + "', " + activityid + ", '" + comment + "', '" + starttime + "')"; 
   dbconnection.query(sql, function(err, result) {
     if (err) console.log(err);
     var newid = result.insertId;
     getPausedElapsed(user, activityid, newid, function(elapsed){
-      res.json({newid:result.insertId, elapsed:elapsed});
+      callback({newid:result.insertId, elapsed:elapsed});
     });
   });
 };
+
+/*** Get or creata an empty activity for the project ***/
+function getEmptyActivity(user, projectid, callback) {
+  dbconnection.query("select id from times.activities where projectid=" + projectid + " and username='" + user + "' and name=''", function(err, rows) {
+    if (rows.length > 0) {
+      callback(rows[0].id);
+    }
+    else {
+      dbconnection.query("insert into times.activities (username, projectid, name, deleted) values('" + user + "', " + projectid + ", '', 0)", function(err, response) {
+        callback(response.insertId);
+      });
+    }
+  });
+}
 
 
 /*** Stop time count for the active avtivity and save elapsed time ***/
@@ -175,8 +239,6 @@ module.exports.stopActivity = function(req, res) {
 
 /*** Register an activity ***/
 module.exports.registerActivity = function(req, res) {
-  var customerid = req.query.customerid;
-  var projectid = req.query.projectid;
   var activityid = req.query.activityid;
   var comment = req.query.comment;
   var adate = req.query.activitydate;
@@ -240,23 +302,82 @@ function getPausedElapsed(user, actid, rtid, callback) {
 
 }
 
-/*** Get the 10 latest activities ***/
-module.exports.getLatestActivities = function(req, res) {
-  var user = req.session.loggedinUser;
-  var sql = "select distinct a.id as aid, a.name as aname, p.id as pid, p.name as pname, c.id as cid, c.name as cname " +
-    "from rawtimes rt " +
-    "inner join activities a on a.id=rt.activityid " +
-    "inner join projects p on p.id=a.projectid " +
-    "inner join customers c on c.id=p.customerid " +
-    "where rt.username='" + user + "' and not rt.elapsedtime is null " +
-    "order by rt.id desc limit 0, 10";
-  dbconnection.query(sql, function(err, rows) {
+module.exports.createCustomer = function(req, res) {
+  var aname = req.query.name;
+  dbconnection.query("select * from times.customers where name='" + aname + "'", function(err, rows) {
     if (err) console.log(err);
-    res.json(rows);
+    if (rows.length > 0) {
+      var id = rows[0].id;
+      dbconnection.query("update times.customers set deleted=0 where id=" + id, function(err, response) {
+        res.json({id:id});
+      });
+    }
+    else {
+      dbconnection.query("insert into times.customers (name, deleted) values('" + aname + "', 0)", function(err, response) {
+        res.json({id:response.insertId});
+      });
+    }
+  });
+};
+
+module.exports.createProject = function(req, res) {
+  var customerid = req.query.customerid;
+  var aname = req.query.name;
+  dbconnection.query("select * from times.projects where name='" + aname + "' and customerid=" + customerid, function(err, rows) {
+    if (err) console.log(err);
+    if (rows.length > 0) {
+      var id = rows[0].id;
+      dbconnection.query("update times.projects set deleted=0 where id=" + id, function(err, response) {
+        res.json({id:id});
+      });
+    }
+    else {
+      dbconnection.query("insert into times.projects (name, customerid, deleted) values('" + aname + "', " + customerid + ", 0)", function(err, response) {
+        res.json({id:response.insertId});
+      });
+    }
+  });
+};
+
+module.exports.deleteCustomer = function(req, res) {
+  var id = req.query.customerid;
+  dbconnection.query("update times.customers set deleted=1 where id=" + id, function(err, response) {
+    if (err) console.log(err);
+  });
+  dbconnection.query("select id from times.projects where customerid=" + id, function(err, rows) {
+    if (err) console.log(err);
+    for (var i=0; i < rows.length; i++)
+      doDeleteProject(rows[i].id);
+  });
+  res.json({});
+}
+
+module.exports.deleteProject = function(req, res) {
+  doDeleteProject(req.query.projectid);
+  res.json({});
+}
+
+module.exports.deleteActivity = function(req, res) {
+  doDeleteActivity(req.query.activityid);
+  res.json({});
+}
+
+function doDeleteProject(id) {
+  dbconnection.query("update times.projects set deleted=1 where id=" + id, function(err, response) {
+    if (err) console.log(err);
+  });
+  dbconnection.query("select id from times.activities where projectid=" + id, function(err, rows) {
+    if (err) console.log(err);
+    for (var i=0; i < rows.length; i++)
+      doDeleteActivity(rows[i].id);
   });
 }
 
-
+function doDeleteActivity(id) {
+  dbconnection.query("update times.activities set deleted=1 where id=" + id, function(err, response) {
+    if (err) console.log(err);
+  });
+}
 
 /*** Convert a JS Date to database friendly format ****/
 function timeToString(atime) {

@@ -1,12 +1,12 @@
 $(document).ready(function(){
 
   var elapsedTimer = 0;
+
+  /*** Info about the current activity ***/
   var activeActivity = {
     id : 0,
     customer : "",
-    customerid : 0,
     project : "",
-    projectid: 0,
     activity : "",
     activityid: 0,
     comment : "",
@@ -15,15 +15,20 @@ $(document).ready(function(){
     paused: false
   };
 
+  /*** Create objects for dropdowns ***/
+  var latestDDStart = getDDObject(".start .select2.latest", "Snabbval - Senaste aktiviteter", getLatestActivitiesData);
+  var customersDDStart = getDDObject(".start .select2.customer", "Välj kund", getCustomersData);
+  var projectsDDStart = getDDObject(".start .select2.project", "Välj projekt", getProjectsData);
+  var activitiesDDStart = getDDObject(".start .select2.activity", "Välj aktivitet", getActivitiesData);
+  var latestDDRegister = getDDObject(".register .select2.latest", "Snabbval - Senaste aktiviteter", getLatestActivitiesData);
+  var customersDDRegister = getDDObject(".register .select2.customer", "Välj kund", getCustomersData);
+  var projectsDDRegister = getDDObject(".register .select2.project", "Välj projekt", getProjectsData);
+  var activitiesDDRegister = getDDObject(".register .select2.activity", "Välj aktivitet", getActivitiesData);
+
+
   function init() {
 
-    // Fill customer dropdowns
-    $.get('/getcustomers', {}, function(cust) {
-      var custsel = $("#booking .bookform select.customer");
-      custsel.append ("<option></option>");
-      for (var i=0; i < cust.length; i++)
-        custsel.append ("<option value='" + cust[i].value + "'>" + cust[i].label + "</option>");
-    });
+    setupSelectBoxes();
 
     $(".register .activitydate .adate").datepicker({dateFormat:'yy-mm-dd'});
 
@@ -31,22 +36,271 @@ $(document).ready(function(){
 
     initGrid();
     
-    getLatestActivities();
-
     getActiveActivity(function(){
       initActivityCounter();  
     });
-    
   }
 
-  function assignEvents() {
-    $("#booking .bookform select.customer").on("change", function(){
-      fillProjectDD($(this));
-    });
-    $("#booking .bookform select.project").on("change", function(){
-      fillActivityDD($(this));
+  function setupSelectBoxes() {
+    // Get initial data for the first dropdowns
+    latestDDStart.refreshData();
+    latestDDRegister.refreshData();
+    customersDDStart.refreshData();
+    customersDDRegister.refreshData();
+
+    // Disable dropdowns
+    projectsDDStart.select2("enable", false);
+    activitiesDDStart.select2("enable", false);
+    projectsDDRegister.select2("enable", false);
+    activitiesDDRegister.select2("enable", false);
+
+    // Change start quick selection propagates downwards
+    latestDDStart.on("change", function(){
+      if ($(this).select2("data") != null) {
+        var vals = $(this).select2("data").id.split('|');
+        customersDDStart.select2("val", vals[0]);
+        projectsDDStart.select2("enable", true);
+        projectsDDStart.refreshData(vals[0], function(){
+          projectsDDStart.select2("val", vals[1]);
+          activitiesDDStart.select2("enable", true);
+          activitiesDDStart.refreshData(vals[1], function(){
+            activitiesDDStart.select2("val", vals[2]);
+          });
+        });
+        $(this).select2("data", null);
+      }
     });
 
+    // Change register quick selection propagates downwards
+    latestDDRegister.on("change", function(){
+      if ($(this).select2("data") != null) {
+        var vals = $(this).select2("data").id.split('|');
+        customersDDRegister.select2("val", vals[0]);
+        projectsDDRegister.select2("enable", true);
+        projectsDDRegister.refreshData(vals[0], function(){
+          projectsDDRegister.select2("val", vals[1]);
+          activitiesDDRegister.select2("enable", true);
+          activitiesDDRegister.refreshData(vals[1], function(){
+            activitiesDDRegister.select2("val", vals[2]);
+          });
+        });
+        $(this).select2("data", null);
+      }
+    });
+
+    // Change start customer. Refresh projects dropdown
+    customersDDStart.on("change", function(){
+      projectsDDStart.select2("data", null);
+      activitiesDDStart.select2("data", null);
+      activitiesDDStart.select2("enable", false);
+      if ($(this).select2("data") == null) {
+        projectsDDStart.select2("enable", false);
+      }
+      else {
+        projectsDDStart.select2("enable", true);
+        var id = $(this).select2("data").id;
+        if (id == -1) { // Create new customer
+          var name = $(this).select2("data").text;
+          $.get('/createcustomer', {name:name}, function(response) {
+            id = response.id;
+            customersDDStart.refreshData();
+            customersDDRegister.refreshData();
+            projectsDDStart.refreshData(id);
+          });
+        }
+        else {
+          projectsDDStart.refreshData(id);
+        }
+      }
+    });
+
+    // Change register customer. Refresh project dropdown
+    customersDDRegister.on("change", function(){
+      projectsDDRegister.select2("data", null);
+      activitiesDDRegister.select2("data", null);
+      activitiesDDRegister.select2("enable", false);
+      if ($(this).select2("data") == null) {
+        projectsDDRegister.select2("enable", false);
+      }
+      else {
+        projectsDDRegister.select2("enable", true);
+        var id = $(this).select2("data").id;
+        if (id == -1) { // Create new customer
+          var name = $(this).select2("data").text;
+          $.get('/createcustomer', {name:name}, function(response) {
+            id = response.id;
+            customersDDRegister.refreshData();
+            customersDDStart.refreshData();
+            projectsDDRegister.refreshData(id);
+          });
+        }
+        else {
+          projectsDDRegister.refreshData(id);
+        }
+      }
+    });
+
+    // Change start project. Refresh activities dropdown
+    projectsDDStart.on("change", function(){
+      activitiesDDStart.select2("data", null);
+      if ($(this).select2("data") == null) {
+        activitiesDDStart.select2("enable", false);
+      }
+      else {
+        activitiesDDStart.select2("enable", true);
+        var id = $(this).select2("data").id;
+        if (id == -1) { // Create new project
+          var name = $(this).select2("data").text;
+          var customerid = customersDDStart.select2("data").id;
+          $.get('/createproject', {customerid:customerid, name:name}, function(response) {
+            id = response.id;
+            projectsDDStart.refreshData();
+            activitiesDDStart.refreshData(id);
+          });
+        }
+        else {
+          activitiesDDStart.refreshData(id);
+        }
+      }
+    });
+
+    // Change register project. Refresh activities dropdown
+    projectsDDRegister.on("change", function(){
+      activitiesDDRegister.select2("data", null);
+      if ($(this).select2("data") == null) {
+        activitiesDDRegister.select2("enable", false);
+      }
+      else {
+        activitiesDDRegister.select2("enable", true);
+        var id = $(this).select2("data").id;
+        if (id == -1) { // Create new project
+          var name = $(this).select2("data").text;
+          var customerid = customersDDRegister.select2("data").id;
+          $.get('/createproject', {customerid:customerid, name:name}, function(response) {
+            id = response.id;
+            projectsDDRegister.refreshData();
+            activitiesDDRegister.refreshData(id);
+          });
+        }
+        else {
+          activitiesDDRegister.refreshData(id);
+        }
+      }
+    });
+  }
+
+  /*** Functions for gettiing data for dropdowns */
+
+  function getLatestActivitiesData(dummy, callback){
+    $.get('/getlatestactivities', {}, function(response) {
+      handleAjaxError(response.err);
+      var latestData = [];
+      for (var i=0; i < response.data.length; i++) {
+        var val = response.data[i].cid + "|" + response.data[i].pid + "|" + response.data[i].aid;
+        var text = response.data[i].cname + " / " + response.data[i].pname + " / " + response.data[i].aname;
+        latestData.push({id:val, text: text});
+      }
+      callback(latestData);
+    });
+  }
+
+  function getCustomersData(dummy, callback) {
+    $.get('/getcustomers', {}, function(response) {
+      handleAjaxError(response.err);
+      var custData = [];
+      for (var i=0; i < response.data.length; i++)
+        custData.push({id:response.data[i].value, text:response.data[i].label});
+      callback(custData);
+    });
+  }
+
+  function getProjectsData(customerid, callback) {
+    $.get('/getprojects', {customer: customerid}, function(response) {
+      handleAjaxError(response.err);
+      var projectsData = [];
+      for (var i=0; i < response.data.length; i++)
+        projectsData.push({id:response.data[i].value, text:response.data[i].label});
+      callback(projectsData);
+    });
+  }
+
+  function getActivitiesData(projectid, callback) {
+    $.get('/getactivities', {project: projectid}, function(response) {
+      handleAjaxError(response.err);
+      var actData = [];
+      for (var i=0; i < response.data.length; i++)
+        actData.push({id:response.data[i].value, text:response.data[i].label});
+      callback(actData);
+    });
+  }
+
+
+  /*** Assign events to html items ***/
+  function assignEvents() {
+
+    // Delete currently selected customer. Assigned to both customer dropdown delete buttons
+    $(".bookform .delcustomer").click(function(){
+      var parent = $(this).parent().parent();
+      var customersDD = (parent.hasClass("start") ? customersDDStart : customersDDRegister);
+      var projectsDD = (parent.hasClass("start") ? projectsDDStart : projectsDDRegister);
+      var activitiesDD = (parent.hasClass("start") ? activitiesDDStart : activitiesDDRegister);
+      if (customersDD.select2("data") != null) {
+        var name = customersDD.select2("data").text;
+        if (confirm("Är du säker på att du vill ta bort kunden " + name + " från databasen?")) {
+          var id = customersDD.select2("data").id;
+          $.get('/deletecustomer', {customerid: id}, function() {
+            customersDDStart.refreshData();
+            customersDDRegister.refreshData();
+            customersDD.select2("data", null);
+            projectsDD.select2("data", null);
+            activitiesDD.select2("data", null);
+            projectsDD.select2("enable", false);
+            activitiesDD.select2("enable", false);
+          });
+        }
+      }
+    });
+
+    // Delete currently selected project. Assigned to both project dropdown delete buttons
+    $(".start .delproject").click(function(){
+      var parent = $(this).parent().parent();
+      var customersDD = (parent.hasClass("start") ? customersDDStart : customersDDRegister);
+      var projectsDD = (parent.hasClass("start") ? projectsDDStart : projectsDDRegister);
+      var activitiesDD = (parent.hasClass("start") ? activitiesDDStart : activitiesDDRegister);
+      if (projectsDD.select2("data") != null) {
+        var name = projectsDD.select2("data").text;
+        if (confirm("Är du säker på att du vill ta bort projektet " + name + " från databasen?")) {
+          var id = projectsDD.select2("data").id;
+          $.get('/deleteproject', {projectid: id}, function() {
+            var customerid = customersDD.select2("data").id;
+            projectsDD.refreshData(customerid);
+            projectsDD.select2("data", null);
+            activitiesDD.select2("data", null);
+            activitiesDD.select2("enable", false);
+          });
+        }
+      }
+    });
+
+    // Delete currently selected activity. Assigned to both activity dropdown delete buttons
+    $(".start .delactivity").click(function(){
+      var parent = $(this).parent().parent();
+      var projectsDD = (parent.hasClass("start") ? projectsDDStart : projectsDDRegister);
+      var activitiesDD = (parent.hasClass("start") ? activitiesDDStart : activitiesDDRegister);
+      if (activitiesDD.select2("data") != null) {
+        var name = activitiesDD.select2("data").text;
+        if (confirm("Är du säker på att du vill ta bort aktivitieten " + name + " från databasen?")) {
+          var id = activitiesDD.select2("data").id;
+          $.get('/deleteactivity', {activityid: id}, function() {
+            var projectid = projectsDD.select2("data").id;
+            activitiesDD.refreshData(projectid);
+            activitiesDD.select2("data", null);
+          });
+        }
+      }
+    });
+
+    // Start and stop buttons
     $(".startbuttons .open").click(function(){
       var now = new Date();
       $(".startbuttons .starttime .hours").val(now.getHours());
@@ -86,81 +340,49 @@ $(document).ready(function(){
       restartActivity();
     });
 
-    $("#booking .bookform select.latest").change(function(){
-      if ($(this).val() != "0") {
-        var vals = $(this).val().split('|');
-        var customerDD = $(this).parent().parent().find("select.customer");
-        var projectDD = $(this).parent().parent().find("select.project");
-        var activityDD = $(this).parent().parent().find("select.activity");
-        customerDD.val(vals[0]);
-        fillProjectDD(customerDD, function(){
-          projectDD.val(vals[1]);
-          fillActivityDD(projectDD, function(){
-            activityDD.val(vals[2]);
-          });
-        });
-        $(this).val("0");
-      }
-    });
-
     $(".regbuttons .register").click(function(){
       registerActivity();
     });
   }
 
-  function fillProjectDD(customerDD, callback) {
-    $.get('/getprojects', {customer: customerDD.val()}, function(projects) {
-      var projectDD = customerDD.parent().parent().find("select.project");
-      var activityDD = customerDD.parent().parent().find("select.activity");
-      projectDD.empty().append("<option></option>");
-      activityDD.empty().append("<option></option>");
-      for (var i=0; i < projects.length; i++)
-        projectDD.append ("<option value='" + projects[i].value + "'>" + projects[i].label + "</option>");
-      if (callback) callback();
-    });
-  }
-
-  function fillActivityDD(projectDD, callback) {
-    $.get('/getactivities', {project: projectDD.val()}, function(activities) {
-      var activityDD = projectDD.parent().parent().find("select.activity");
-      activityDD.empty().append("<option></option>");
-      for (var i=0; i < activities.length; i++)
-        activityDD.append ("<option value='" + activities[i].value + "'>" + activities[i].label + "</option>");
-      if (callback) callback();
-    });
-  }
-
-  function getLatestActivities(){
-    $.get('/getlatestactivities', {}, function(rows) {
-      var options = "<option value='0'></option>";
-      for (var i=0; i < rows.length; i++) {
-        var val = rows[i].cid + "|" + rows[i].pid + "|" + rows[i].aid;
-        var text = rows[i].cname + " / " + rows[i].pname + " / " + rows[i].aname;
-        options += "<option value='" + val + "'>" + text + "</option>";
-      }
-      $("#booking .bookform select.latest").html(options);
-    });
-  }
-
+  /*** Stops any active activity and starts the selected activity ***/
+  /*** If no activity is selected a blank activity for the selected project is started ***/
   function startActivity() {
+    if (customersDDStart.select2("data") == null) {
+      $(customersDDStart.select2("container")).addClass("error");
+      setTimeout(function(){
+        $(customersDDStart.select2("container")).removeClass("error");
+      }, 3000);
+      return;
+    }
+    if (projectsDDStart.select2("data") == null) {
+      $(projectsDDStart.select2("container")).addClass("error");
+      setTimeout(function(){
+        $(projectsDDStart.select2("container")).removeClass("error");
+      }, 3000);
+      return;
+    }
     stopActivity(new Date(), function(){
       var starttime = new Date();
       var hours = $("div.start .starttime .hours").val();
       var mins = $("div.start .starttime .minutes").val();
       starttime.setHours(hours);
       starttime.setMinutes(mins);
-      activeActivity.customerid = $("div.start .customer").val();
-      activeActivity.customer = $("div.start .customer option:selected").text();
-      activeActivity.projectid = $("div.start .project").val();
-      activeActivity.project = $("div.start .project option:selected").text();
-      activeActivity.activityid = $("div.start .activity").val();
-      activeActivity.activity = $("div.start .activity option:selected").text();
+      activeActivity.customer = customersDDStart.select2("data").text;
+      activeActivity.project = projectsDDStart.select2("data").text;
+      if (activitiesDDStart.select2("data") == null) {
+        activeActivity.activityid = 0;
+        activeActivity.activity = "";
+      }
+      else {
+        activeActivity.activityid = activitiesDDStart.select2("data").id;
+        activeActivity.activity = activitiesDDStart.select2("data").text;
+      }
       activeActivity.comment = $("div.start .comment").val();
       activeActivity.starttime = starttime;
       activeActivity.pausedElapsed = 0;
       $.get('/startactivity', {
-        customerid: activeActivity.customerid, 
-        projectid: activeActivity.projectid, 
+        projectid: projectsDDStart.select2("data").id,
         activityid: activeActivity.activityid, 
         comment: activeActivity.comment, 
         starttime: starttime
@@ -172,6 +394,106 @@ $(document).ready(function(){
     });
   }
 
+  /*** Stops the currently active activity ***/
+  function stopActivity(stoptime, callback) {
+    if (activeActivity.id != 0) {
+      $.get('/stopactivity', {id:activeActivity.id, starttime:activeActivity.starttime, stoptime:stoptime, paused:0}, function() {
+
+        clearInterval(elapsedTimer);
+        $("#booking .active .isactive").hide();
+        $("#booking .active .isnotactive").show();
+        $("#booking .active .stopnuttons .pause").show();
+        $("#booking .active .stopnuttons .restart").hide();
+        $("#timesgrid").trigger("reloadGrid"); 
+        activeActivity.id = 0;
+
+        latestDDStart.refreshData();
+        latestDDRegister.refreshData();
+
+        if (callback) callback();
+      });
+    }
+    else if (callback) {
+      callback();
+    }
+  }
+
+  /*** Pauses the currently active activity ***/
+  function pauseActivity() {
+    if (activeActivity.id != 0) {
+      var stoptime = new Date();
+      $.get('/stopactivity', {id:activeActivity.id, starttime:activeActivity.starttime, stoptime:stoptime, paused:1}, function(response) {
+        clearInterval(elapsedTimer);
+        $("#booking .active .stopnuttons .pause").hide();
+        $("#booking .active .stopnuttons .restart").show();
+        activeActivity.pausedElapsed += response.elapsed;
+        activeActivity.paused = true;
+        initActivityCounter();
+      });
+    }
+  }
+
+  /*** Restarts a paused activity ***/
+  function restartActivity() {
+    activeActivity.starttime = new Date();
+    $.get('/startactivity', {
+      activityid: activeActivity.activityid, 
+      comment: activeActivity.comment, 
+      starttime: activeActivity.starttime
+    }, function(response) {
+      activeActivity.id = response.newid;
+      activeActivity.paused = false;
+      activeActivity.pausedElapsed = response.elapsed;
+      initActivityCounter();
+    });
+  }
+
+  /*** Registers elapsed time for the selected activity ***/
+  function registerActivity() {
+    if (customersDDRegister.select2("data") == null) {
+      $(customersDDRegister.select2("container")).addClass("error");
+      setTimeout(function(){
+        $(customersDDRegister.select2("container")).removeClass("error");
+      }, 3000);
+      return;
+    }
+    if (projectsDDRegister.select2("data") == null) {
+      $(projectsDDRegister.select2("container")).addClass("error");
+      setTimeout(function(){
+        $(projectsDDRegister.select2("container")).removeClass("error");
+      }, 3000);
+      return;
+    }
+    var adate = $(".register .activitydate .adate").val();
+    if (adate.length == 0) {
+      $(".register .activitydate .adate").addClass("error");
+      setTimeout(function(){
+        $(".register .activitydate .adate").removeClass("error");
+      }, 3000);
+      return;
+    }
+
+    var projectid = projectsDDRegister.select2("data").id;
+    var activityid = (activitiesDDRegister.select2("data") ? activitiesDDRegister.select2("data").id : 0);
+    var comment = $(".register .comment").val();
+    var hours = $(".register .elapsed .hours").val();
+    var minutes = $(".register .elapsed .minutes").val();
+    $.get('/registeractivity', {
+      projectid: projectid, 
+      activityid: activityid, 
+      comment: comment, 
+      activitydate: adate,
+      hours: hours,
+      minutes: minutes
+    }, function(response) {
+      $("#timesgrid").trigger("reloadGrid"); 
+      latestDDStart.refreshData();
+      latestDDRegister.refreshData();
+    });
+  }
+
+
+  /*** Shows the active or paused activity and starts the timer for elapsed time ***/
   function initActivityCounter() {
     if (activeActivity.id != 0) {
       $("#booking .active .customer").text(activeActivity.customer);
@@ -187,7 +509,11 @@ $(document).ready(function(){
         $("#booking .active .stopbuttons .restart").show();
       }
       else {
-        $("#booking .active .starttime").text(getTimeString(activeActivity.starttime));
+        var h = String(activeActivity.starttime.getHours());
+        if (h.length < 2) h = "0" + h;
+        var m = String(activeActivity.starttime.getMinutes());
+        if (m.length < 2) m = "0" + m;
+        $("#booking .active .starttime").text(h + ":" + m);
         $("#booking .active .headline").text("Aktiv aktivitet");
         $("#booking .active .stopbuttons .pause").show();
         $("#booking .active .stopbuttons .restart").hide();
@@ -197,14 +523,13 @@ $(document).ready(function(){
     }
   }
 
+  /*** Gets the currently active activity from the database. Called att page load ***/
   function getActiveActivity(callback) {
     $.get("/getactiveactivity", {}, function(response) {
       if (response) {
         activeActivity.id = response.id;
         activeActivity.customer = response.customer;
-        activeActivity.customerid = response.cid;
         activeActivity.project = response.project;
-        activeActivity.projectid = response.pid;
         activeActivity.activity = response.activity;
         activeActivity.activityid = response.aid;
         activeActivity.comment = response.comment;
@@ -218,153 +543,51 @@ $(document).ready(function(){
     });
   }
 
-  function stopActivity(stoptime, callback) {
-    if (activeActivity.id != 0) {
-      $.get('/stopactivity', {id:activeActivity.id, starttime:activeActivity.starttime, stoptime:stoptime, paused:0}, function() {
-
-        clearInterval(elapsedTimer);
-        $("#booking .active .isactive").hide();
-        $("#booking .active .isnotactive").show();
-        $("#booking .active .stopnuttons .pause").show();
-        $("#booking .active .stopnuttons .restart").hide();
-        $("#timesgrid").trigger("reloadGrid"); 
-        activeActivity.id = 0;
-
-        getLatestActivities();
-
-        if (callback) callback();
-      });
-    }
-    else if (callback) {
-      callback();
-    }
-  }
-
-  function pauseActivity() {
-    if (activeActivity.id != 0) {
-      var stoptime = new Date();
-      $.get('/stopactivity', {id:activeActivity.id, starttime:activeActivity.starttime, stoptime:stoptime, paused:1}, function(response) {
-        clearInterval(elapsedTimer);
-        $("#booking .active .stopnuttons .pause").hide();
-        $("#booking .active .stopnuttons .restart").show();
-        activeActivity.pausedElapsed += response.elapsed;
-        activeActivity.paused = true;
-        initActivityCounter();
-      });
-    }
-  }
-
-  function restartActivity() {
-    activeActivity.starttime = new Date();
-    $.get('/startactivity', {
-      customerid: activeActivity.customerid, 
-      projectid: activeActivity.projectid, 
-      activityid: activeActivity.activityid, 
-      comment: activeActivity.comment, 
-      starttime: activeActivity.starttime
-    }, function(response) {
-      activeActivity.id = response.newid;
-      activeActivity.paused = false;
-      activeActivity.pausedElapsed = response.elapsed;
-      initActivityCounter();
-    });
-  }
-
-  function registerActivity() {
-    var customerid = $(".register select.customer").val();
-    var projectid = $(".register select.project").val();
-    var activityid = $(".register select.activity").val();
-    var comment = $(".register .comment").val();
-    var adate = $(".register .activitydate .adate").val();
-    var hours = $(".register .elapsed .hours").val();
-    var minutes = $(".register .elapsed .minutes").val();
-    $.get('/registeractivity', {
-      customerid: customerid, 
-      projectid: projectid, 
-      activityid: activityid, 
-      comment: comment, 
-      activitydate: adate,
-      hours: hours,
-      minutes: minutes
-    }, function(response) {
-      $("#timesgrid").trigger("reloadGrid"); 
-      getLatestActivities();
-    });
-  }
-
+  /*** Show elapsed time for active activity ***/
   function showElapsed() {
     var minutes = activeActivity.pausedElapsed;
     if (!activeActivity.paused) 
       minutes += Math.floor((new Date() - activeActivity.starttime)/60000);
-    $("#booking .active .elapsed").text(getElapsedString(minutes));
-  }
-
-  function getElapsedMinutes(start, end) {
-    var s = start.split(':');
-    var e = end.split(':');
-    var elapsed = 0;
-    if (s.length > 1 && e.length > 1) {
-      var sh = parseInt(s[0], 10);
-      var sm = parseInt(s[1], 10);
-      var eh = parseInt(e[0], 10);
-      var em = parseInt(e[1], 10);
-      if (!(isNaN(sh) || isNaN(sm) || isNaN(eh) || isNaN(em))) {
-        if (sh > eh) eh += 24;
-        elapsed = (eh-sh)*60 + (em - sm);
-      }
-    }
-    return elapsed;
-  }
-
-  function getElapsedString(minutes) {
     var h = Math.floor(minutes/60);
     var m = minutes - h*60;
-    return h + " tim " + m + " min";
+    $("#booking .active .elapsed").text(h + " tim " + m + " min");
   }
 
-  function getTimeString(atime) {
-    var h = String(atime.getHours());
-    if (h.length < 2) h = "0" + h;
-    var m = String(atime.getMinutes());
-    if (m.length < 2) m = "0" + m;
-    return h + ":" + m;
-  }
-
-  function fillEditCustomersDropown() {
-    var rowid = $("#timesgrid").jqGrid ('getGridParam', 'selrow');
-    var currcust = $("#timesgrid").jqGrid("getCell", rowid, "customer");
-    $.get('/getcustomers', {}, function(customers) {
-      var sel = $("select#customer").empty();
-      for (var i=0; i < customers.length; i++)
-        sel.append("<option value='" + customers[i].value + "' role='option' " + (customers[i].label == currcust ? "selected" : "") + ">" + customers[i].label + "</option>");
-      fillEditProjectsDropown(currcust);
+  /*** Returns a jQuery object with attached data array and refreshing function ***/
+  function getDDObject(selector, placeholder, getDataFunc) {
+    var dd = $(selector);
+    dd.val("");
+    dd.listData = [];
+    dd.refreshData = function(param, callback){
+      getDataFunc(param, function(data){
+        dd.listData = data;
+        if (callback) callback();
+      });
+    };
+    dd.select2({
+      placeholder:placeholder,
+      createSearchChoice: function(term) { 
+        return { id: -1, text:term }
+      },
+      allowClear:true,
+      data: function() { 
+        return {results: dd.listData}; 
+      }
     });
+    return dd;
   }
 
-  function fillEditProjectsDropown(currcust, changed) {
-    var rowid = $("#timesgrid").jqGrid ('getGridParam', 'selrow');
-    var currproj = (changed ? "" : $("#timesgrid").jqGrid("getCell", rowid, "project"));
-    $.get('/getprojects?byname=1', {customer:currcust}, function(projects) {
-      var sel = $("select#project").empty();
-      for (var i=0; i < projects.length; i++)
-        sel.append("<option value='" + projects[i].value + "' role='option' " + (projects[i].label == currproj ? "selected" : "") + ">" + projects[i].label + "</option>");
-      fillEditActivitiesDropown(currproj, changed);
-    });
-  }
-
-  function fillEditActivitiesDropown(currproj, changed) {
-    var rowid = $("#timesgrid").jqGrid ('getGridParam', 'selrow');
-    var curract = (changed ? "" : $("#timesgrid").jqGrid("getCell", rowid, "activity"));
-    $.get('/getactivities?byname=1', {project:currproj}, function(activities) {
-      var sel = $("select#activity").empty();
-      for (var i=0; i < activities.length; i++)
-        sel.append("<option value='" + activities[i].value + "' role='option' " + (activities[i].label == curract ? "selected" : "") + ">" + activities[i].label + "</option>");
-    });
+  /*** Redirects to login page if user is logged out ***/
+  function handleAjaxError(err) {
+    if (err) {
+      console.log(err);
+      if (err == "Logged out")
+        document.location.href = "/login"
+    }
   }
 
 
-
-
+  /*** Initialize jqgrid showing finished activities ***/
   function initGrid() {
     $("#timesgrid").jqGrid({
       url:'/gettimes',
@@ -372,9 +595,9 @@ $(document).ready(function(){
       autowidth:true,
       postData: {
         idcol:"_id",
-        cols:"id,customer,project,activity,comment,startdate,starttime,endtime,elapsedtime"
+        cols:"id,customer,project,activity,comment,startdate,starttime,elapsedtime"
       },
-      colNames: ['','Kund', 'Projekt', 'Aktivitet', 'Beskrivning', 'Datum', 'Starttid', 'Sluttid', 'Tidsåtgång'],
+      colNames: ['','Kund', 'Projekt', 'Aktivitet', 'Beskrivning', 'Datum', 'Starttid', 'Tidsåtgång'],
       colModel:[
         {name:'id', hidden:true },
         {
@@ -425,42 +648,12 @@ $(document).ready(function(){
         {
           name:'starttime', width:'5%', 
           search:false, sortable:false, editable:true, 
-          sorttype:'date', formatter:'date', formatoptions:{srcformat: 'Y-m-d H:i:s', newformat: 'H:i' },
-          editoptions:{
-            dataEvents: [{
-              type:"change",
-              fn: function(){
-                $("#elapsedtime").val(getElapsedMinutes($("#starttime").val(), $("#endtime").val()).min);
-              }
-            }]
-          }
-        },
-        {
-          name:'endtime', width:'5%', 
-          search:false, sortable:false, editable:true, 
-          sorttype:'date', formatter:'date', formatoptions:{srcformat: 'Y-m-d H:i:s', newformat: 'H:i' },
-          editoptions:{
-            dataEvents: [{
-              type:"change",
-              fn: function(){
-                $("#elapsedtime").val(getElapsedMinutes($("#starttime").val(), $("#endtime").val()).min);
-              }
-            }]
-          }
+          sorttype:'date', formatter:'date', formatoptions:{srcformat: 'Y-m-d H:i:s', newformat: 'H:i' }
         },
         {
           name:'elapsedtime', width:'7%', 
           search:false, sortable:true, editable:true, 
-          formatter:formatElapsed, unformat:unformatElapsed, formoptions:{elmsuffix:'&nbsp;&nbsp;minuter'},
-          editoptions:{
-            dataEvents: [{
-              type:"change",
-              fn: function(){
-                $("#starttime").val("");
-                $("#endtime").val("");
-              }
-            }]
-          }
+          formatter:formatElapsed, unformat:unformatElapsed, formoptions:{elmsuffix:'&nbsp;&nbsp;minuter'}
         }
       ],
       datatype: "json",
@@ -489,6 +682,41 @@ $(document).ready(function(){
     ).filterToolbar();
   }
 
+  /*** Functions called from the grid filling the dropdowns in edit mode ***/
+  function fillEditCustomersDropown() {
+    var rowid = $("#timesgrid").jqGrid ('getGridParam', 'selrow');
+    var currcust = $("#timesgrid").jqGrid("getCell", rowid, "customer");
+    $.get('/getcustomers', {}, function(response) {
+      var sel = $("select#customer").empty();
+      for (var i=0; i < response.data.length; i++)
+        sel.append("<option value='" + response.data[i].value + "' role='option' " + (response.data[i].label == currcust ? "selected" : "") + ">" + response.data[i].label + "</option>");
+      fillEditProjectsDropown(currcust);
+    });
+  }
+
+  function fillEditProjectsDropown(currcust, changed) {
+    var rowid = $("#timesgrid").jqGrid ('getGridParam', 'selrow');
+    var currproj = (changed ? "" : $("#timesgrid").jqGrid("getCell", rowid, "project"));
+    $.get('/getprojects?byname=1', {customer:currcust}, function(response) {
+      var sel = $("select#project").empty();
+      for (var i=0; i < response.data.length; i++)
+        sel.append("<option value='" + response.data[i].value + "' role='option' " + (response.data[i].label == currproj ? "selected" : "") + ">" + response.data[i].label + "</option>");
+      fillEditActivitiesDropown(currproj, changed);
+    });
+  }
+
+  function fillEditActivitiesDropown(currproj, changed) {
+    var rowid = $("#timesgrid").jqGrid ('getGridParam', 'selrow');
+    var curract = (changed ? "" : $("#timesgrid").jqGrid("getCell", rowid, "activity"));
+    $.get('/getactivities?byname=1', {project:currproj}, function(response) {
+      var sel = $("select#activity").empty();
+      for (var i=0; i < response.data.length; i++)
+        sel.append("<option value='" + response.data[i].value + "' role='option' " + (response.data[i].label == curract ? "selected" : "") + ">" + response.data[i].label + "</option>");
+    });
+  }
+
+
+  /*** Called from the grid. Formats/unformats elapsed time ***/
   function formatElapsed(cellValue, options, rowObject) {
       var h = parseInt(cellValue/60);
     var min = cellValue - h*60;

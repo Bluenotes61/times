@@ -1,35 +1,46 @@
 #booking {
   max-width: 900px;
 }
+.error {
+  border:solid 1px #f00;
+}
+.forminput {
+  font-family: Helvetica,​Arial,​sans-serif;
+  font-size: 14px;
+  background-color: #fff;
+  background-image: linear-gradient(to top, #eee 0%, #fff 50%);
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  padding: 5px;
+}
 
-#booking .bookform {
+.bookform {
   float:left;
   width:32%;
-  margin-right: 1%
+  margin-right: 1%;
+  min-width:200px;
 }
 
-#booking .bookform .row > * {
-  vertical-align: top;
-  display: inline-block;
+.bookform .row {
+  margin-top:10px;
 }
-#booking .bookform .row > h3 {
-  min-width: 100px;
-  width: 30%;
-}
-#booking .bookform .row > select,
-#booking .bookform .row > textarea {
-  width: 50%;
+.bookform .row > textarea {
+  width: 100%;
 }
 
-#booking .active .isactive {
+.bookform .select2 {
+  width:95%;
+}
+
+.active .isactive {
   display: none;
 }
 
-#booking .stopbuttons .restart {
+.stopbuttons .restart {
   display: none;
 }
 
-#booking .settimepop {
+.settimepop {
   position: absolute;
   display: none;
   border:solid 1px #ccc;
@@ -38,11 +49,18 @@
   z-index: 1000;
 }
 
-#booking .settimepop input,
-#booking .register .elapsed input {
-  width:40px;
+.register .elapsed {
+  display: inline-block;
 }
-#booking .settimepop span,
-#booking .register .elapsed span {
+.register .adate {
+  width:90px;
+  margin-right: 10px;
+}
+.settimepop input,
+.register .elapsed input {
+  width:50px;
+}
+.settimepop span {
   padding:0 5px;
 }
+

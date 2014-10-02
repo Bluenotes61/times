@@ -242,8 +242,8 @@ module.exports.registerActivity = function(req, res) {
   var activityid = req.query.activityid;
   var comment = req.query.comment;
   var adate = req.query.activitydate;
-  var hours = parseInt(req.query.hours, 10);
-  var minutes = parseInt(req.query.minutes, 10);
+  var hours = (req.query.hours.length == 0 ? 0 : parseInt(req.query.hours, 10));
+  var minutes = (req.query.minutes.length == 0 ? 0 : parseInt(req.query.minutes));
   var elapsed = hours*60 + minutes;
   var user = req.session.loggedinUser;
   var sql = "insert into rawtimes " + 
@@ -251,7 +251,7 @@ module.exports.registerActivity = function(req, res) {
     "values ('" + user + "', " + activityid + ", '" + comment + "', '" + adate + "', " + elapsed + ", 0)"; 
   dbconnection.query(sql, function(err, result) {
     if (err) console.log(err);
-    res.json({});
+    res.json({err:err});
   });
 };
 

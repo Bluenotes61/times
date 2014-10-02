@@ -305,10 +305,7 @@ $(document).ready(function(){
       var now = new Date();
       $(".startbuttons .starttime .hours").val(now.getHours());
       $(".startbuttons .starttime .minutes").val(now.getMinutes());
-      $(".startbuttons .starttime").slideDown();
-    });
-    $(".startbuttons .starttime .cancel").click(function(){
-      $(".startbuttons .starttime").slideUp();
+      $(".startbuttons .starttime").slideToggle();
     });
     $(".startbuttons .starttime .start").click(function(){
       startActivity();
@@ -319,10 +316,7 @@ $(document).ready(function(){
       var now = new Date();
       $(".stopbuttons .stoptime .hours").val(now.getHours());
       $(".stopbuttons .stoptime .minutes").val(now.getMinutes());
-      $(".stopbuttons .stoptime").slideDown();
-    });
-    $(".stopbuttons .stoptime .cancel").click(function(){
-      $(".stopbuttons .stoptime").slideUp();
+      $(".stopbuttons .stoptime").slideToggle();
     });
     $(".stopbuttons .stoptime .stop").click(function(){
       var stoptime = new Date();
@@ -349,18 +343,10 @@ $(document).ready(function(){
   /*** If no activity is selected a blank activity for the selected project is started ***/
   function startActivity() {
     if (customersDDStart.select2("data") == null) {
-      $(customersDDStart.select2("container")).addClass("error");
-      setTimeout(function(){
-        $(customersDDStart.select2("container")).removeClass("error");
-      }, 3000);
-      return;
+      return errorOn(customersDDStart.select2("container"));
     }
     if (projectsDDStart.select2("data") == null) {
-      $(projectsDDStart.select2("container")).addClass("error");
-      setTimeout(function(){
-        $(projectsDDStart.select2("container")).removeClass("error");
-      }, 3000);
-      return;
+      return errorOn(projectsDDStart.select2("container"));
     }
     stopActivity(new Date(), function(){
       var starttime = new Date();
@@ -400,8 +386,6 @@ $(document).ready(function(){
       $.get('/stopactivity', {id:activeActivity.id, starttime:activeActivity.starttime, stoptime:stoptime, paused:0}, function() {
 
         clearInterval(elapsedTimer);
-        $("#booking .active .isactive").hide();
-        $("#booking .active .isnotactive").show();
         $("#booking .active .stopnuttons .pause").show();
         $("#booking .active .stopnuttons .restart").hide();
         $("#timesgrid").trigger("reloadGrid"); 
@@ -409,6 +393,8 @@ $(document).ready(function(){
 
         latestDDStart.refreshData();
         latestDDRegister.refreshData();
+
+        initActivityCounter();
 
         if (callback) callback();
       });
@@ -451,33 +437,31 @@ $(document).ready(function(){
   /*** Registers elapsed time for the selected activity ***/
   function registerActivity() {
     if (customersDDRegister.select2("data") == null) {
-      $(customersDDRegister.select2("container")).addClass("error");
-      setTimeout(function(){
-        $(customersDDRegister.select2("container")).removeClass("error");
-      }, 3000);
-      return;
+      return errorOn(customersDDRegister.select2("container"));
     }
     if (projectsDDRegister.select2("data") == null) {
-      $(projectsDDRegister.select2("container")).addClass("error");
-      setTimeout(function(){
-        $(projectsDDRegister.select2("container")).removeClass("error");
-      }, 3000);
-      return;
+      return errorOn(projectsDDRegister.select2("container"));
     }
     var adate = $(".register .activitydate .adate").val();
     if (adate.length == 0) {
-      $(".register .activitydate .adate").addClass("error");
-      setTimeout(function(){
-        $(".register .activitydate .adate").removeClass("error");
-      }, 3000);
-      return;
+      return errorOn(".register .activitydate .adate");
+    }
+    var hours = $(".register .elapsed .hours").val();
+    var minutes = $(".register .elapsed .minutes").val();
+    console.log(hours, minutes);
+    if (!$.isNumeric(hours) && !$.isNumeric(minutes)) {
+      return errorOn(".register .activitydate .elapsed input");
+    }
+    if (hours.length > 0 && !$.isNumeric(hours)) {
+      return errorOn(".register .elapsed .hours");
+    }
+    if (minutes.length > 0 && !$.isNumeric(minutes)) {
+      return errorOn(".register .elapsed .minutes");
     }
 
     var projectid = projectsDDRegister.select2("data").id;
     var activityid = (activitiesDDRegister.select2("data") ? activitiesDDRegister.select2("data").id : 0);
     var comment = $(".register .comment").val();
-    var hours = $(".register .elapsed .hours").val();
-    var minutes = $(".register .elapsed .minutes").val();
     $.get('/registeractivity', {
       projectid: projectid, 
       activityid: activityid, 
@@ -486,9 +470,22 @@ $(document).ready(function(){
       hours: hours,
       minutes: minutes
     }, function(response) {
-      $("#timesgrid").trigger("reloadGrid"); 
-      latestDDStart.refreshData();
-      latestDDRegister.refreshData();
+      if (!response.err) {
+        $("#timesgrid").trigger("reloadGrid"); 
+        latestDDStart.refreshData();
+        latestDDRegister.refreshData();
+        customersDDRegister.select2("data", null);
+        projectsDDRegister.select2("data", null);
+        activitiesDDRegister.select2("data", null);
+        $(".register .comment").val("");
+        $(".register .adate").val("");
+        $(".register .hours").val("");
+        $(".register .minutes").val("");
+        $(".regbuttons .register").text("Aktivitet registrerad");
+        setTimeout(function(){
+          $(".regbuttons .register").text("Registrera");
+        }, 3000);
+      }
     });
   }
 
@@ -496,12 +493,12 @@ $(document).ready(function(){
   /*** Shows the active or paused activity and starts the timer for elapsed time ***/
   function initActivityCounter() {
     if (activeActivity.id != 0) {
+      $("#booking .active").show();
+      $("#booking .start").hide();
       $("#booking .active .customer").text(activeActivity.customer);
       $("#booking .active .project").text(activeActivity.project);
       $("#booking .active .activity").text(activeActivity.activity);
       $("#booking .active .comment").text(activeActivity.comment);
-      $("#booking .active .isactive").show();
-      $("#booking .active .isnotactive").hide();
       if (activeActivity.paused) { 
         $("#booking .active .starttime").text("");
         $("#booking .active .headline").text("Pausad aktivitet");
@@ -520,6 +517,10 @@ $(document).ready(function(){
       }
       showElapsed();
       elapsedTimer = setInterval(showElapsed, 30000);
+    }
+    else {
+      $("#booking .active").hide();
+      $("#booking .start").show();
     }
   }
 
@@ -582,7 +583,7 @@ $(document).ready(function(){
     if (err) {
       console.log(err);
       if (err == "Logged out")
-        document.location.href = "/login"
+        document.location.href = "/"
     }
   }
 
@@ -730,6 +731,14 @@ $(document).ready(function(){
       return 0;
   }
 
+  /*** Sets and removes error class on an item ***/
+  function errorOn(sel) {
+    $(sel).addClass("error");
+    setTimeout(function(){
+      $(sel).removeClass("error");
+    }, 3000);
+    return false;
+  }
 
   init();
 

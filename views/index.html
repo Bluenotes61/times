@@ -6,7 +6,6 @@
 {{/yield-styles}}
 
 {{#yield-scripts}}
-  <!--script src="//code.jquery.com/jquery-1.10.2.js"></script-->
   <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
 
   <script src='/js/jqgrid/js/jquery.jqGrid.min.js'></script>
@@ -16,34 +15,23 @@
   <script src='/js/index.js'></script>
 {{/yield-scripts}}
 
-<h1>{{title}}</h1>
-
-<input type="hidden" id="carOptions" style="width: 300px;" />
-<input type="hidden" id="carOptions2" style="width: 300px;" />
-
 <div id='booking' class='clearfix'>
   <div class='active bookform'>
     <h2 class='headline'>Aktiv aktivitet</h2>
-    <div class='isactive'>
-      <div class='row'><h3>Kund:</h3><span class="customer"></span></div>
-      <div class='row'><h3>Projekt:</h3><span class="project"></span></div>
-      <div class='row'><h3>Aktivitet:</h3><span class="activity"></span></div>
-      <div class='row'><h3>Kommentar:</h3><span class='comment'></span></div>
-      <div class='row'><h3>Starttid:</h3><span class='starttime'></span></div>
-      <div class='row'><h3>Tidsåtgång:</h3><span class='elapsed'></span></div>
-      <div class='stopbuttons'>
-        <a class='pause'>Pausa aktivitet</a>
-        <a class='open'>Stoppa aktivitet</a>
-        <a class='restart'>Återuppta aktivitet</a>
-        <div class='stoptime settimepop'>
-          <h4>Tid för avslut</h4>
-          <div><input type='number' class='hours' min='0' max='23' /><span>:</span><input type='number' class='minutes' min='0' max='59' /></div>
-          <div><a class='stop'>Stoppa</a><a class='cancel'>Avbryt</a></div>
-        </div>
+    <div class='row'><h3>Kund:</h3><span class="customer"></span></div>
+    <div class='row'><h3>Projekt:</h3><span class="project"></span></div>
+    <div class='row'><h3>Aktivitet:</h3><span class="activity"></span></div>
+    <div class='row'><h3>Kommentar:</h3><span class='comment'></span></div>
+    <div class='row'><h3>Starttid:</h3><span class='starttime'></span></div>
+    <div class='row'><h3>Tidsåtgång:</h3><span class='elapsed'></span></div>
+    <div class='stopbuttons'>
+      <a class='pause button'>Pausa</a>
+      <a class='open button'>Stoppa</a>
+      <a class='restart button'>Återuppta</a>
+      <div class='stoptime settimepop'>
+        <input type='number' class='hours' min='0' max='23' /><span>:</span><input type='number' class='minutes' min='0' max='59' />
+        <a class='stop button'>Stoppa</a>
       </div>
-    </div>
-    <div class='isnotactive'>
-      <h3>Ingen aktiv aktivitet</h3>
     </div>
   </div>
 
@@ -68,11 +56,10 @@
       <textarea class='comment forminput' placeholder="Ange en kommentar"></textarea>
     </div>
     <div class='startbuttons'>
-      <a class='open'>Starta aktivitet</a>
+      <a class='open button'>Starta</a>
       <div class='starttime settimepop'>
-        <h4>Tid för start</h4>
-        <div><input type='number' class='hours' min='0' max='23' /><span>:</span><input type='number' class='minutes' min='0' max='59' /></div>
-        <div><a class='start'>Starta</a><a class='cancel'>Avbryt</a></div>
+        <input type='number' class='hours' min='0' max='23' /><span>:</span><input type='number' class='minutes' min='0' max='59' />
+        <a class='start button'>Starta</a>
       </div>
     </div>
   </div>
@@ -98,16 +85,17 @@
       <textarea class='comment forminput' placeholder="Ange en kommentar"></textarea>
     </div>
     <div class='row activitydate'>
-      <input type='text' placeholder="Datum" class='adate forminput' />
+      <input type='text' placeholder="Ange datum" class='adate forminput' />
       <div class='elapsed'><input type='number' class='hours forminput' min='0' max='23' /> tim <input type='number' class='minutes forminput' min='0' max='59' /> min</div>
     </div>
     <div class='regbuttons'>
-      <a class='register'>Spara aktivitet</a>
+      <a class='register button'>Registrera</a>
     </div>
   </div>
 </div>
 
-
-<h2>Senaste aktiviteter</h2>
-<table id="timesgrid"></table>
-<div id="timesctrl"></div>
+<div class='grid'>
+  <h2>Avslutade aktiviteter</h2>
+  <table id="timesgrid"></table>
+  <div id="timesctrl"></div>
+</div>

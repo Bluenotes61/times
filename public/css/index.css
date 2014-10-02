@@ -2,7 +2,7 @@
   max-width: 900px;
 }
 .error {
-  border:solid 1px #f00;
+  border:solid 1px #f00 !important;
 }
 .forminput {
   font-family: Helvetica,​Arial,​sans-serif;
@@ -13,16 +13,45 @@
   border-radius: 4px;
   padding: 5px;
 }
+a.button {
+  background-image: linear-gradient(to top, #ccc 0%, #eee 50%);
+  display:inline-block;
+  padding:5px 10px;
+  border:solid 1px #ccc;
+  border-radius: 4px;
+  box-shadow: 2px 2px 2px 2px #aaa;
+  transition: all 0.1s linear 0s;
+  margin-top:10px;
+}
+a.button:first-child {
+  margin-right: 10px;
+}
+a.button:hover {
+  box-shadow: 2px 2px 2px 1px #aaa;
+}
 
 .bookform {
   float:left;
   width:32%;
   margin-right: 1%;
   min-width:200px;
+  padding:15px;
+  border:solid 1px #ccc;
+  margin-bottom:20px;
+}
+@media (max-width: 600px) {
+  .bookform {
+    width:100%;
+    margin-right: 0;
+  }
 }
 
 .bookform .row {
   margin-top:10px;
+}
+.bookform .row h3 {
+  display: inline-block;
+  min-width: 100px;
 }
 .bookform .row > textarea {
   width: 100%;
@@ -41,12 +70,10 @@
 }
 
 .settimepop {
-  position: absolute;
   display: none;
-  border:solid 1px #ccc;
-  background:#fff;
-  padding:10px;
-  z-index: 1000;
+}
+.settimepop a.button {
+  margin-left: 10px;
 }
 
 .register .elapsed {
@@ -64,3 +91,8 @@
   padding:0 5px;
 }
 
+@media (max-width: 600px) {
+  .grid {
+    display: none;
+  }
+}

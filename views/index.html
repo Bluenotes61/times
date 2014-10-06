@@ -15,7 +15,13 @@
   <script src='/js/index.js'></script>
 {{/yield-scripts}}
 
-<div id='booking' class='clearfix'>
+<div id='tabs'>
+  <a class='register active'>Registrera</a>
+  <a class='ended'>Avslutade</a>
+  <a class='compilation'>Sammanfattning</a>
+</div>
+
+<div id='booking' class='page clearfix'>
   <div class='active bookform'>
     <h2 class='headline'>Aktiv aktivitet</h2>
     <div class='row'><h3>Kund:</h3><span class="customer"></span></div>
@@ -94,8 +100,12 @@
   </div>
 </div>
 
-<div class='grid'>
+<div id='ended' class='page'>
   <h2>Avslutade aktiviteter</h2>
   <table id="timesgrid"></table>
   <div id="timesctrl"></div>
+</div>
+
+<div id='compilation' class='page'>
+  <h2>Sammanfattning</h2>
 </div>

@@ -238,6 +238,26 @@ $(document).ready(function(){
   /*** Assign events to html items ***/
   function assignEvents() {
 
+    // Tab clicks
+    $("#tabs a.active").click(function(){
+      $("#tabs a").removeClass("active");
+      $(this).addClass("active");
+      $("div.page").hide();
+      $("#booking").show();
+    });
+    $("#tabs a.ended").click(function(){
+      $("#tabs a").removeClass("active");
+      $(this).addClass("active");
+      $("div.page").hide();
+      $("#ended").show();
+    });
+    $("#tabs a.compilation").click(function(){
+      $("#tabs a").removeClass("active");
+      $(this).addClass("active");
+      $("div.page").hide();
+      $("#compilation").show();
+    });
+
     // Delete currently selected customer. Assigned to both customer dropdown delete buttons
     $(".bookform .delcustomer").click(function(){
       var parent = $(this).parent().parent();
@@ -664,10 +684,10 @@ $(document).ready(function(){
       pager: '#timesctrl',
       sortname: 'id',
       viewrecords: true,
-      width:'100%',
-      height:'100%',
-      forceFit:true,
-      shrinkToFit:true
+      width:900
+      //autoWidth:true,
+      //forceFit:true
+//      shrinkToFit:true
     }).navGrid(
       '#timesctrl',
       {edit:true,add:false,del:true},

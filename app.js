@@ -27,34 +27,34 @@ app.use(express.static(__dirname + '/public'));
 app.disable('etag'); // Prevent caching
 
 
-var db = require("./routes/db.js");
-var login = require("./routes/login.js");
+var loginpage = require("./routes/loginpage.js");
 var mainpage = require("./routes/mainpage.js");
 
-app.get("/login", login.index);
-app.post("/login", login.post);
+app.get("/login", loginpage.index);
+app.post("/login", loginpage.post);
+
 app.get("/", mainpage.index);
 
 
-/*** Ajax functions ***/
-app.get("/gettimes", db.getTimes);
-app.post("/saveedittime", db.saveTime);
+/*** Mainpage ajax functions ***/
+app.get("/gettimes", mainpage.getTimes);
+app.post("/saveedittime", mainpage.saveTime);
 
-app.get("/getcustomers", db.getCustomers);
-app.get("/getprojects", db.getProjects);
-app.get("/getactivities", db.getActivities);
+app.get("/getcustomers", mainpage.getCustomers);
+app.get("/getprojects", mainpage.getProjects);
+app.get("/getactivities", mainpage.getActivities);
 
-app.get("/startactivity", db.startActivity);
-app.get("/stopactivity", db.stopActivity);
-app.get("/registeractivity", db.registerActivity);
-app.get("/getactiveactivity", db.getActiveActivity);
-app.get("/getlatestactivities", db.getLatestActivities);
+app.get("/startactivity", mainpage.startActivity);
+app.get("/stopactivity", mainpage.stopActivity);
+app.get("/registeractivity", mainpage.registerActivity);
+app.get("/getactiveactivity", mainpage.getActiveActivity);
+app.get("/getlatestactivities", mainpage.getLatestActivities);
 
-app.get("/createcustomer", db.createCustomer);
-app.get("/createproject", db.createProject);
-app.get("/deletecustomer", db.deleteCustomer);
-app.get("/deleteproject", db.deleteProject);
-app.get("/deleteactivity", db.deleteActivity);
+app.get("/createcustomer", mainpage.createCustomer);
+app.get("/createproject", mainpage.createProject);
+app.get("/deletecustomer", mainpage.deleteCustomer);
+app.get("/deleteproject", mainpage.deleteProject);
+app.get("/deleteactivity", mainpage.deleteActivity);
 
 
 /// catch 404 and forwarding to error handler

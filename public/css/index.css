@@ -34,6 +34,9 @@ a.button:hover {
   display:none;
 }
 
+#ended {
+  width:99%;
+}
 #tabs {
   padding-bottom:10px;
 }
@@ -49,9 +52,28 @@ a.button:hover {
 #tabs a.active {
   background: #363B48;
 }
+#navbuttons {
+  display:none;
+  position: fixed;
+  right:10px;
+  top:10px;
+}
+#navbuttons a {
+  display: block;
+  padding: 5px;
+  font-weight: bold;
+  border: solid 1px #fff;
+  border-radius: 4px;
+  background:#363B48;
+  color:#fff;
+}
+
 @media (max-width: 600px) {
   #tabs {
     display: none;
+  }
+  #navbuttons {
+    display: block;
   }
 }
 
@@ -101,6 +123,9 @@ a.button:hover {
   margin-left: 10px;
 }
 
+.bookform.register {
+  margin-bottom:100px;
+}
 .register .elapsed {
   display: inline-block;
 }
@@ -116,3 +141,16 @@ a.button:hover {
   padding:0 5px;
 }
 
+#compilation .selectors {
+  margin:10px 0;
+}
+#compilation .selectors > div {
+  margin-bottom:5px;
+}
+#compilation .selectors span {
+  width:80px;
+  display: inline-block;
+}
+#compilation input {
+  width:90px;
+}

@@ -2,29 +2,39 @@ var db = require("./db.js");
 
 /*** Render page or redirect to login ***/
 exports.index = function(req, res) {
-  if (getUserFromGuid(req.query.guid, function(user){
-    if (user.length == 0) {
-      res.redirect("/login");
+  getUser(req, res, function(user){
+    if (user.isadmin) {
+      db.connection.query("select guid, name from times.users where isactive=1 order by name", function(err, rows) {
+        var useroptions = "<option value='_all_'>Alla</option>";
+        for (var i=0; i < rows.length; i++) {
+          useroptions += "<option value='" + rows[i].guid + "' " + (rows[i].guid == user.guid ? "selected='selected'" : "") + ">" + rows[i].name + "</option>";
+        }
+        res.render("index", {title:"Boka tider", username:user.username, isadmin:user.isadmin, useroptions:useroptions});
+      });
     }
-    else {
-      req.session.loggedinUser = user;
-      res.render("index", {title:"Boka tider", username:user});
-    }
-  }));
+    else 
+      res.render("index", {title:"Boka tider", username:user.username, isadmin:user.isadmin, userguid:user.guid});
+  });
 };
 
 
 /*** Ajax calls ***/
 
-/*** Get jqgrid data ***/
-exports.getTimes = function(req, res) {
+exports.getEndedTimes = function(req, res) {
   getUser(req, res, function(user){
     var page = req.query.page;
     var maxnof = req.query.rows;
-    var sortcol = req.query.sidx;
+    var sortcol = req.query.sidx;;
     var sortorder = req.query.sord;
     var cols = req.query.cols.split(',');
-    var filters = (req.query.filters ? JSON.parse(req.query.filters) : null);
+    var searchfields = {
+      'customer' : 'c.name',
+      'project'  : 'p.name',
+      'activity' : 'a.name',
+      'comment' : 'comment',
+      'startdate': 't.starttime'
+    };
+    var filter = getFilterSql(req.query, searchfields);
     if (sortcol == "id") {
       sortcol = "starttime";
       sortorder = "desc";
@@ -36,7 +46,7 @@ exports.getTimes = function(req, res) {
       "inner join times.activities a on a.id=t.activityid " +
       "inner join times.projects p on p.id=a.projectid " +
       "inner join times.customers c on c.id=p.customerid " +
-      "where t.username='" + user + "' and not elapsedtime is null and paused <> 1 " +
+      "where t.username='" + user.username + "' and not elapsedtime is null and paused <> 1 " + filter + " " +
       "order by " + sortcol + " " + sortorder;
 
     db.connection.query(sql, function(err, rows) {
@@ -54,7 +64,59 @@ exports.getTimes = function(req, res) {
 };
 
 
-/*** Save an edited registration from grid or delete a registration ***/
+/*** Get compilationgrid data ***/
+exports.getCompilationTimes = function(req, res) {
+  var page = req.query.page;
+  var maxnof = req.query.rows;
+  var sortcol = req.query.sidx;
+  var sortorder = req.query.sord;
+  var userguid = req.query.userguid;
+  var cols = req.query.cols.split(',');
+  var searchfields = {
+    'customer' : 'c.name',
+    'project'  : 'p.name',
+    'activity' : 'a.name',
+    'comment'  : 'comment',
+    'user'     : 'u.name'
+  };
+  var filter = getFilterSql(req.query, searchfields);
+  var start = maxnof*(page - 1);
+
+  var usersnip = (userguid == "_all_" ? "" : "u.guid='" + userguid + "' and ");
+
+  var sql = "select c.name as customer, p.name as project, a.name as activity, t.comment, u.name as user, SUM(t.elapsedtime) as elapsedtime " +
+    "from times.rawtimes t " +
+    "inner join times.activities a on a.id=t.activityid " +
+    "inner join times.projects p on p.id=a.projectid " +
+    "inner join times.customers c on c.id=p.customerid " +
+    "inner join times.users u on u.username=t.username " +
+    "where " + usersnip + "not elapsedtime is null and paused <> 1 and t.starttime >= '" + req.query.from + "' and t.starttime <= '" + req.query.to + "' " + filter + " " +
+    "group by c.name, p.name, a.name, t.comment " +
+    "order by c.name";
+
+  db.connection.query(sql, function(err, rows) {
+    if (err) console.log(err);
+    var totpages = (rows.length > 0 ? parseInt(Math.floor(rows.length/maxnof), 10) : 0);
+    var rows2 = rows.splice(start, maxnof);
+    var sum = 0;
+    for (var i=0; i < rows2.length; i++)
+      sum += rows2[i].elapsedtime
+    var userdata = {
+      'comment':'Totalt:',
+      'elapsedtime':sum
+    };
+    res.json({
+      page:page,
+      total:totpages,
+      records:rows.length,
+      rows:rows2,
+      userdata: userdata
+    });
+  });
+};
+
+
+/*** Save an edited registration from endedgrid or delete a registration ***/
 exports.saveTime = function(req, res) {
   if (req.body.oper == "del") {
     db.connection.query("delete from rawtimes where id=" + req.body.id, function(err, rows) {
@@ -87,7 +149,7 @@ exports.getLatestActivities = function(req, res) {
       "inner join activities a on a.id=rt.activityid " +
       "inner join projects p on p.id=a.projectid " +
       "inner join customers c on c.id=p.customerid " +
-      "where a.deleted=0 and rt.username='" + user + "' and not rt.elapsedtime is null " +
+      "where a.deleted=0 and rt.username='" + user.username + "' and not rt.elapsedtime is null " +
       "order by rt.id desc limit 0, 10";
     db.connection.query(sql, function(err, rows) {
       if (err) console.log(err);
@@ -137,7 +199,7 @@ exports.getActivities = function(req, res) {
       sql += "where p.name='" + project + "' and ";
     else
       sql += "where a.deleted=0 and p.id=" + project + " and ";
-    sql += "a.username = '" + user + "' " +
+    sql += "a.username = '" + user.username + "' " +
        "order by p.name";
     db.connection.query(sql, function(err, rows) {
       if (err) console.log(err);
@@ -156,15 +218,15 @@ exports.startActivity = function(req, res) {
     var starttime = timeToString(new Date(req.query.starttime));
 
     if (activityid == 0) { // Use an empty activity if not specified
-      getEmptyActivity(user, projectid, function(id){
+      getEmptyActivity(user.username, projectid, function(id){
         activityid = id;
-        doStartActivity(user, activityid, comment, starttime, function(result){
+        doStartActivity(user.username, activityid, comment, starttime, function(result){
           res.json(result);
         });
       });
     }
     else {
-      doStartActivity(user, activityid, comment, starttime, function(result){
+      doStartActivity(user.username, activityid, comment, starttime, function(result){
         res.json(result);
       });
     }
@@ -173,14 +235,14 @@ exports.startActivity = function(req, res) {
 
 
 /*** Start activity by adding a rawtimes post ***/
-function doStartActivity(user, activityid, comment, starttime, callback) {
+function doStartActivity(username, activityid, comment, starttime, callback) {
   var sql = "insert into times.rawtimes " + 
     "(username, activityid, comment, starttime) " +
-    "values ('" + user + "', " + activityid + ", '" + comment + "', '" + starttime + "')"; 
+    "values ('" + username + "', " + activityid + ", '" + comment + "', '" + starttime + "')"; 
   db.connection.query(sql, function(err, result) {
     if (err) console.log(err);
     var newid = result.insertId;
-    getPausedElapsed(user, activityid, newid, function(elapsed){
+    getPausedElapsed(username, activityid, newid, function(elapsed){
       callback({newid:result.insertId, elapsed:elapsed});
     });
   });
@@ -188,13 +250,13 @@ function doStartActivity(user, activityid, comment, starttime, callback) {
 
 
 /*** Get or create an unnamed activity for the project ***/
-function getEmptyActivity(user, projectid, callback) {
-  db.connection.query("select id from times.activities where projectid=" + projectid + " and username='" + user + "' and name=''", function(err, rows) {
+function getEmptyActivity(username, projectid, callback) {
+  db.connection.query("select id from times.activities where projectid=" + projectid + " and username='" + username + "' and name=''", function(err, rows) {
     if (rows.length > 0) {
       callback(rows[0].id);
     }
     else {
-      db.connection.query("insert into times.activities (username, projectid, name, deleted) values('" + user + "', " + projectid + ", '', 0)", function(err, response) {
+      db.connection.query("insert into times.activities (username, projectid, name, deleted) values('" + username + "', " + projectid + ", '', 0)", function(err, response) {
         callback(response.insertId);
       });
     }
@@ -206,7 +268,7 @@ function getEmptyActivity(user, projectid, callback) {
 exports.stopActivity = function(req, res) {
   getUser(req, res, function(user){
     if (req.query.paused != 1) { 
-      db.connection.query("update rawtimes set paused=0 where username='" + user + "'", function(err, result) {
+      db.connection.query("update rawtimes set paused=0 where username='" + user.username + "'", function(err, result) {
         if (err) console.log(err);
       });
     }
@@ -245,7 +307,7 @@ exports.registerActivity = function(req, res) {
     var elapsed = hours*60 + minutes;
     var sql = "insert into rawtimes " + 
       "(username, activityid, comment, starttime, elapsedtime, paused) " +
-      "values ('" + user + "', " + activityid + ", '" + comment + "', '" + adate + "', " + elapsed + ", 0)"; 
+      "values ('" + user.username + "', " + activityid + ", '" + comment + "', '" + adate + "', " + elapsed + ", 0)"; 
     db.connection.query(sql, function(err, result) {
       if (err) console.log(err);
       res.json({err:err});
@@ -265,14 +327,14 @@ exports.getActiveActivity = function(req, res) {
       "p.id=a.projectid " +
       "inner join times.customers c on " +
       "c.id=p.customerid " +
-      "where rt.username='" + user + "' and (rt.elapsedtime is null or rt.paused=1) " +
+      "where rt.username='" + user.username + "' and (rt.elapsedtime is null or rt.paused=1) " +
       "order by rt.id desc";
     db.connection.query(sql, function(err, rows) {
       if (err) console.log(err);
       if (rows.length > 0) {
         rows[0].pausedElapsed = 0;
         if (rows[0].paused == 1) {
-          getPausedElapsed(user, rows[0].aid, rows[0].id, function(elapsed){
+          getPausedElapsed(user.username, rows[0].aid, rows[0].id, function(elapsed){
             rows[0].pausedElapsed = elapsed;
             res.json(rows[0]);
           });
@@ -288,9 +350,9 @@ exports.getActiveActivity = function(req, res) {
 
 
 /*** Sum elapsed time for all paused instances of the current activity ***/
-function getPausedElapsed(user, actid, rtid, callback) { 
+function getPausedElapsed(username, actid, rtid, callback) { 
   var sum = 0;
-  var sql = "select activityid, elapsedtime from times.rawtimes where username='" + user + "' and id <= " + rtid + " and paused=1 order by id desc limit 0, 50";
+  var sql = "select activityid, elapsedtime from times.rawtimes where username='" + username + "' and id <= " + rtid + " and paused=1 order by id desc limit 0, 50";
   db.connection.query(sql, function(err, rows) {
     if (err) console.log(err);
     var i = 0;
@@ -371,6 +433,8 @@ exports.deleteActivity = function(req, res) {
 };
 
 
+/*** Local functions ***/
+
 /** Do the database update for marking a project as deleted ***/
 function doDeleteProject(id) {
   db.connection.query("update times.projects set deleted=1 where id=" + id, function(err, response) {
@@ -404,28 +468,58 @@ function timeToString(atime) {
 function getUser(req, res, callback) {
   if (!req.session.loggedinUser) {
     var guid = req.query.guid;
-    db.connection.query("select username from times.users where guid='" + req.query.guid + "'", function(err, rows) {
+    db.connection.query("select username, isadmin, guid from times.users where guid='" + req.query.guid + "'", function(err, rows) {
       if (rows.length == 0)
         res.redirect("/login");
       else
-        req.session.loggedinUser = rows[0].username;
+        req.session.loggedinUser = rows[0];
       callback(req.session.loggedinUser);
     });
   }
   else
     callback(req.session.loggedinUser);
+};
+
+
+/*** Generate sql from filter parameters from grid ***/
+function getFilterSql(q, searchfields) {
+  var sql = "";
+  if (q.filters) {
+    var json = JSON.parse(q.filters);  
+    sql = "and (";
+    for (var i=0; i < json.rules.length; i++) {
+      if (i > 0) sql += " " + json.groupOp + " ";
+      sql += searchfields[json.rules[i].field] + " " + getSqlOper(json.rules[i].op, json.rules[i].data);
+    }
+    sql += ")";
+  }
+  var sql2 = "";
+  for(var prop in q) {
+    if (searchfields[prop] != null) {
+      if (sql2.length > 0) sql2 += " and ";
+      sql2 += searchfields[prop] + " like '%" + q[prop] + "%'";
+    }
+  }
+  if (sql2.length > 0) 
+    sql += " and (" + sql2 + ")";
+
+  return sql;
 }
 
-
-/*** Returns the username given the user guid ***/
-function getUserFromGuid(guid, callback){
-  db.connection.query("select username from times.users where guid='" + guid + "'", function(err, rows) {
-    if (err) console.log(err);
-    if (rows.length == 0) {
-      callback("");
-    }
-    else {
-      callback(rows[0].username);
-    }
-  });
-};
+/*** Get sql operator from grid operator ***/
+function getSqlOper(op, val) {
+  if (op == "ne") return "<> '" + val + "'";
+  else if (op == "lt") return "< " + val;
+  else if (op == "le") return "<= " + val;
+  else if (op == "gt") return "> " + val;
+  else if (op == "ge") return ">= " + val;
+  else if (op == "bw") return "like '" + val + "%'";
+  else if (op == "bn") return "not like '" + val + "%'";
+  else if (op == "in") return "in ('" + val + "')";
+  else if (op == "ni") return "not in ('" + val + "')";
+  else if (op == "ew") return "like '%" + val + "'";
+  else if (op == "en") return "not like '%" + val + "'";
+  else if (op == "cn") return "like '%" + val + "%'";
+  else if (op == "nc") return "not like '%" + val + "%'";
+  else return "= '" + val + "'";
+}

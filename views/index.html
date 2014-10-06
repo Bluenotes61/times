@@ -21,6 +21,11 @@
   <a class='compilation'>Sammanfattning</a>
 </div>
 
+<div id='navbuttons'>
+  <a class='start'>S</a>
+  <a class='register'>R</a>
+</div>
+
 <div id='booking' class='page clearfix'>
   <div class='active bookform'>
     <h2 class='headline'>Aktiv aktivitet</h2>
@@ -102,10 +107,22 @@
 
 <div id='ended' class='page'>
   <h2>Avslutade aktiviteter</h2>
-  <table id="timesgrid"></table>
-  <div id="timesctrl"></div>
+  <table id="endedgrid"></table>
+  <div id="endedctrl"></div>
 </div>
 
 <div id='compilation' class='page'>
   <h2>Sammanfattning</h2>
+  <div class='selectors'>
+    {{#isadmin}}
+      <div><span>Användare:</span><select class='curruser forminput'>{{{useroptions}}}</select></div>
+    {{/isadmin}}
+    {{^isadmin}}
+      <input type='hidden' class='curruser' value='{{userguid}}' />
+    {{/isadmin}}
+    <div><span>Från:</span><input type='text' class='forminput from' placeholder='Från' /></div>
+    <div><span>Till:</span><input type='text' class='forminput to' placeholder='Till' /></div>
+  </div>
+  <table id="compilationgrid"></table>
+  <div id="compilationctrl"></div>
 </div>

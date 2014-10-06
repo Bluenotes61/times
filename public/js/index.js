@@ -34,11 +34,32 @@ $(document).ready(function(){
 
     assignEvents();
 
-    initGrid();
+    var now = new Date();
+    var end = new Date(now.getTime() - now.getTimezoneOffset()*60000);
+    var send = end.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+    var start = new Date(now.getTime() - now.getTimezoneOffset()*60000);
+    start.setMonth(start.getMonth() - 1);
+    var sstart = start.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+
+    $("#compilation input.from").val(sstart);
+    $("#compilation input.to").val(send);
+    $("#compilation input.from, #compilation input.to").change(function(){
+      $("#compilationgrid").trigger("reloadGrid");
+    }).datepicker({dateFormat:'yy-mm-dd'});
+    $("#compilation .curruser").change(function(){
+      if ($(this).val() == "_all_") $("#compilationgrid").showCol("user");
+      else $("#compilationgrid").hideCol("user");
+      $("#compilationgrid").trigger("reloadGrid");
+    }).datepicker({dateFormat:'yy-mm-dd'});
+
+    initEndedGrid();
+    initCompilationGrid();
     
+
     getActiveActivity(function(){
       initActivityCounter();  
     });
+
   }
 
   function setupSelectBoxes() {
@@ -193,7 +214,7 @@ $(document).ready(function(){
 
   function getLatestActivitiesData(dummy, callback){
     $.get('/getlatestactivities', {}, function(response) {
-      handleAjaxError(response.err);
+      if (response.err) console.log(response.err);
       var latestData = [];
       for (var i=0; i < response.data.length; i++) {
         var val = response.data[i].cid + "|" + response.data[i].pid + "|" + response.data[i].aid;
@@ -206,7 +227,7 @@ $(document).ready(function(){
 
   function getCustomersData(dummy, callback) {
     $.get('/getcustomers', {}, function(response) {
-      handleAjaxError(response.err);
+      if (response.err) console.log(response.err);
       var custData = [];
       for (var i=0; i < response.data.length; i++)
         custData.push({id:response.data[i].value, text:response.data[i].label});
@@ -216,7 +237,7 @@ $(document).ready(function(){
 
   function getProjectsData(customerid, callback) {
     $.get('/getprojects', {customer: customerid}, function(response) {
-      handleAjaxError(response.err);
+      if (response.err) console.log(response.err);
       var projectsData = [];
       for (var i=0; i < response.data.length; i++)
         projectsData.push({id:response.data[i].value, text:response.data[i].label});
@@ -226,7 +247,7 @@ $(document).ready(function(){
 
   function getActivitiesData(projectid, callback) {
     $.get('/getactivities', {project: projectid}, function(response) {
-      handleAjaxError(response.err);
+      if (response.err) console.log(response.err);
       var actData = [];
       for (var i=0; i < response.data.length; i++)
         actData.push({id:response.data[i].value, text:response.data[i].label});
@@ -257,6 +278,17 @@ $(document).ready(function(){
       $("div.page").hide();
       $("#compilation").show();
     });
+    $("#navbuttons a.start").click(function(){
+      $('html, body').animate({
+        scrollTop: $("#booking .start").offset().top
+      }, 500);
+    });
+    $("#navbuttons a.register").click(function(){
+      $('html, body').animate({
+        scrollTop: $("#booking .register").offset().top
+      }, 500);
+    });
+
 
     // Delete currently selected customer. Assigned to both customer dropdown delete buttons
     $(".bookform .delcustomer").click(function(){
@@ -408,7 +440,7 @@ $(document).ready(function(){
         clearInterval(elapsedTimer);
         $("#booking .active .stopnuttons .pause").show();
         $("#booking .active .stopnuttons .restart").hide();
-        $("#timesgrid").trigger("reloadGrid"); 
+        $("#endedgrid").trigger("reloadGrid"); 
         activeActivity.id = 0;
 
         latestDDStart.refreshData();
@@ -491,7 +523,7 @@ $(document).ready(function(){
       minutes: minutes
     }, function(response) {
       if (!response.err) {
-        $("#timesgrid").trigger("reloadGrid"); 
+        $("#endedgrid").trigger("reloadGrid"); 
         latestDDStart.refreshData();
         latestDDRegister.refreshData();
         customersDDRegister.select2("data", null);
@@ -598,31 +630,32 @@ $(document).ready(function(){
     return dd;
   }
 
-  /*** Redirects to login page if user is logged out ***/
-  function handleAjaxError(err) {
-    if (err) {
-      console.log(err);
-      if (err == "Logged out")
-        document.location.href = "/"
-    }
+  /*** Sets and removes error class on an item ***/
+  function errorOn(sel) {
+    $(sel).addClass("error");
+    setTimeout(function(){
+      $(sel).removeClass("error");
+    }, 3000);
+    return false;
   }
 
+  
+  /*** Functions for ended grid ***/
 
   /*** Initialize jqgrid showing finished activities ***/
-  function initGrid() {
-    $("#timesgrid").jqGrid({
-      url:'/gettimes',
+  function initEndedGrid() {
+    $("#endedgrid").jqGrid({
+      url:'/getendedtimes',
       editurl:'/saveedittime',
-      autowidth:true,
       postData: {
         idcol:"_id",
         cols:"id,customer,project,activity,comment,startdate,starttime,elapsedtime"
       },
       colNames: ['','Kund', 'Projekt', 'Aktivitet', 'Beskrivning', 'Datum', 'Starttid', 'Tidsåtgång'],
       colModel:[
-        {name:'id', hidden:true },
+        {name:'id', hidden:true, width:0 },
         {
-          name:'customer', width:'10%',
+          name:'customer', width:8,
           sortable:true, editable:true, edittype:"select",
           editoptions: {
             value: "0:",
@@ -635,7 +668,7 @@ $(document).ready(function(){
           }
         },
         {
-          name:'project', width:'10%',
+          name:'project', width:10,
           sortable:true, editable:true, edittype:"select",
           editoptions: {
             value: "0:",
@@ -648,11 +681,11 @@ $(document).ready(function(){
           }
         },
         {
-          name:'activity', width:'10%',
+          name:'activity', width:10,
           sortable:true, editable:true, edittype:"select", editoptions:{value: "0:"}
         },
-        {name:'comment', width:'15%', sortable:true, editable:true, edittype:'textarea' },
-        {name:'startdate', width:'5%',
+        {name:'comment', width:20, sortable:true, editable:true, edittype:'textarea' },
+        {name:'startdate', width:8,
           searchoptions:{
             dataInit: function(elem) {
               $(elem).datepicker({dateFormat:'yy-mm-dd'});
@@ -667,29 +700,27 @@ $(document).ready(function(){
           formatoptions:{srcformat: 'Y-m-d H:i:s', newformat: 'Y-m-d' }
         },
         {
-          name:'starttime', width:'5%', 
+          name:'starttime', width:5, 
           search:false, sortable:false, editable:true, 
           sorttype:'date', formatter:'date', formatoptions:{srcformat: 'Y-m-d H:i:s', newformat: 'H:i' }
         },
         {
-          name:'elapsedtime', width:'7%', 
+          name:'elapsedtime', width:7, 
           search:false, sortable:true, editable:true, 
           formatter:formatElapsed, unformat:unformatElapsed, formoptions:{elmsuffix:'&nbsp;&nbsp;minuter'}
         }
       ],
       datatype: "json",
       altRows:false,
-      rowNum:10,
+      rowNum:20,
       rowList:[10,20,50,100],
-      pager: '#timesctrl',
+      pager: '#endedctrl',
       sortname: 'id',
-      viewrecords: true,
-      width:900
-      //autoWidth:true,
-      //forceFit:true
-//      shrinkToFit:true
+      height:'100%',
+      width:900,
+      viewrecords: true
     }).navGrid(
-      '#timesctrl',
+      '#endedctrl',
       {edit:true,add:false,del:true},
       {
         onInitializeForm: function(){
@@ -703,10 +734,10 @@ $(document).ready(function(){
     ).filterToolbar();
   }
 
-  /*** Functions called from the grid filling the dropdowns in edit mode ***/
+  /*** Functions called from the endedgrid filling the dropdowns in edit mode ***/
   function fillEditCustomersDropown() {
-    var rowid = $("#timesgrid").jqGrid ('getGridParam', 'selrow');
-    var currcust = $("#timesgrid").jqGrid("getCell", rowid, "customer");
+    var rowid = $("#endedgrid").jqGrid ('getGridParam', 'selrow');
+    var currcust = $("#endedgrid").jqGrid("getCell", rowid, "customer");
     $.get('/getcustomers', {}, function(response) {
       var sel = $("select#customer").empty();
       for (var i=0; i < response.data.length; i++)
@@ -716,8 +747,8 @@ $(document).ready(function(){
   }
 
   function fillEditProjectsDropown(currcust, changed) {
-    var rowid = $("#timesgrid").jqGrid ('getGridParam', 'selrow');
-    var currproj = (changed ? "" : $("#timesgrid").jqGrid("getCell", rowid, "project"));
+    var rowid = $("#endedgrid").jqGrid ('getGridParam', 'selrow');
+    var currproj = (changed ? "" : $("#endedgrid").jqGrid("getCell", rowid, "project"));
     $.get('/getprojects?byname=1', {customer:currcust}, function(response) {
       var sel = $("select#project").empty();
       for (var i=0; i < response.data.length; i++)
@@ -727,8 +758,8 @@ $(document).ready(function(){
   }
 
   function fillEditActivitiesDropown(currproj, changed) {
-    var rowid = $("#timesgrid").jqGrid ('getGridParam', 'selrow');
-    var curract = (changed ? "" : $("#timesgrid").jqGrid("getCell", rowid, "activity"));
+    var rowid = $("#endedgrid").jqGrid ('getGridParam', 'selrow');
+    var curract = (changed ? "" : $("#endedgrid").jqGrid("getCell", rowid, "activity"));
     $.get('/getactivities?byname=1', {project:currproj}, function(response) {
       var sel = $("select#activity").empty();
       for (var i=0; i < response.data.length; i++)
@@ -736,8 +767,7 @@ $(document).ready(function(){
     });
   }
 
-
-  /*** Called from the grid. Formats/unformats elapsed time ***/
+  /*** Called from the endedgrid. Formats/unformats elapsed time ***/
   function formatElapsed(cellValue, options, rowObject) {
       var h = parseInt(cellValue/60);
     var min = cellValue - h*60;
@@ -751,14 +781,48 @@ $(document).ready(function(){
       return 0;
   }
 
-  /*** Sets and removes error class on an item ***/
-  function errorOn(sel) {
-    $(sel).addClass("error");
-    setTimeout(function(){
-      $(sel).removeClass("error");
-    }, 3000);
-    return false;
+
+  /*** Initialize jqgrid showing finished activities ***/
+  function initCompilationGrid() {
+    $("#compilationgrid").jqGrid({
+      url:"/getcompilationtimes",
+      postData: {
+        idcol:"_id",
+        cols:"customer,project,activity,comment,user,elapsedtime"
+      },
+      colNames: ['Kund', 'Projekt', 'Aktivitet', 'Beskrivning', 'Användare', 'Tidsåtgång'],
+      colModel:[
+        { name:'customer', width:10, sortable:true },
+        { name:'project', width:10, sortable:true },
+        { name:'activity', width:10, sortable:true },
+        { name:'comment', width:15, sortable:true },
+        { name:'user', width:8, sortable:true, hidden:true },
+        { name:'elapsedtime', width:7, search:false, sortable:false, formatter:formatElapsed }
+      ],
+      datatype: "json",
+      altRows:false,
+      rowNum:10,
+      rowList:[10,20,50,100],
+      pager: '#compilationctrl',
+      sortname: 'customer',
+      footerrow: true,
+      userDataOnFooter:true,
+      height:'100%',
+      width:900,
+      viewrecords: true,
+      postData:{
+        cols: 'customer,project,activity,comment,user,elapsedtime',
+        from: function(){ return $("#compilation input.from").val(); },
+        to: function(){ return $("#compilation input.to").val(); },
+        userguid: function(){ return $("#compilation .curruser").val(); }
+      }
+    }).navGrid(
+      '#compilationctrl',
+      {edit:false,add:false,del:false},{},{},{},
+      {multipleSearch:true}
+    ).filterToolbar();
   }
+
 
   init();
 

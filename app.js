@@ -7,8 +7,8 @@ var session = require('express-session');
 
 var app = express();
 
-var server = app.listen(3000, function() {
-  console.log('Listening on port %d', server.address().port);
+var server = app.listen(process.env.PORT, function() {
+  console.log('Listening on port %d', server.address().port, server.address());
 });
 
 
@@ -24,7 +24,6 @@ app.use(methodOverride());
 app.use(cookieParser());
 app.use(session({secret:'En hemlighet'}));
 app.use(express.static(__dirname + '/public'));
-app.disable('etag'); // Prevent caching
 
 
 var db = require("./routes/db.js");
@@ -49,12 +48,6 @@ app.get("/stopactivity", db.stopActivity);
 app.get("/registeractivity", db.registerActivity);
 app.get("/getactiveactivity", db.getActiveActivity);
 app.get("/getlatestactivities", db.getLatestActivities);
-
-app.get("/createcustomer", db.createCustomer);
-app.get("/createproject", db.createProject);
-app.get("/deletecustomer", db.deleteCustomer);
-app.get("/deleteproject", db.deleteProject);
-app.get("/deleteactivity", db.deleteActivity);
 
 
 /// catch 404 and forwarding to error handler

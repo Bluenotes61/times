@@ -9,11 +9,11 @@ exports.index = function(req, res) {
         for (var i=0; i < rows.length; i++) {
           useroptions += "<option value='" + rows[i].guid + "' " + (rows[i].guid == user.guid ? "selected='selected'" : "") + ">" + rows[i].name + "</option>";
         }
-        res.render("index", {title:"Boka tider", username:user.username, isadmin:user.isadmin, useroptions:useroptions});
+        res.render("index", {title:"Boka tider", username:user.username, user_name:user.name, isadmin:user.isadmin, useroptions:useroptions});
       });
     }
     else 
-      res.render("index", {title:"Boka tider", username:user.username, isadmin:user.isadmin, userguid:user.guid});
+      res.render("index", {title:"Boka tider", username:user.username, user_name:user.name, isadmin:user.isadmin, userguid:user.guid});
   });
 };
 
@@ -468,12 +468,13 @@ function timeToString(atime) {
 function getUser(req, res, callback) {
   if (!req.session.loggedinUser) {
     var guid = req.query.guid;
-    db.connection.query("select username, isadmin, guid from times.users where guid='" + req.query.guid + "'", function(err, rows) {
+    db.connection.query("select username, isadmin, guid, name from times.users where guid='" + req.query.guid + "'", function(err, rows) {
       if (rows.length == 0)
         res.redirect("/login");
-      else
+      else {
         req.session.loggedinUser = rows[0];
-      callback(req.session.loggedinUser);
+        callback(req.session.loggedinUser);
+      }
     });
   }
   else

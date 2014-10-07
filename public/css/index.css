@@ -22,8 +22,6 @@ a.button {
   box-shadow: 2px 2px 2px 2px #aaa;
   transition: all 0.1s linear 0s;
   margin-top:10px;
-}
-a.button:first-child {
   margin-right: 10px;
 }
 a.button:hover {
@@ -56,7 +54,8 @@ a.button:hover {
   display:none;
   position: fixed;
   right:10px;
-  top:10px;
+  top:5px;
+  z-index: 1001;
 }
 #navbuttons a {
   display: block;

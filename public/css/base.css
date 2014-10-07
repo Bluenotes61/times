@@ -1,5 +1,8 @@
-body {
+html, body {
   padding: 0;
+  margin:0;
+}
+body {
   font: 14px Helvetica, Arial, sans-serif;
 }
 
@@ -25,38 +28,48 @@ img { border:0; }
   clear: both;
 }
 
-.topbar {
+#topbar {
   background:#363B48;
   padding:20px;
   color:#fff;
 }
-.topbar h1 {
+#topbar h1 {
   float: left;
   color:#fff;
 }
-.topbar .userinfo {
+#topbar .userinfo {
   float:right;
   line-height: 180%;
 }
-.topbar .userinfo a {
+#topbar .userinfo a {
   margin-left: 10px;
   color:#ccc;
 }
-.topbar .userinfo a:hover {
+#topbar .userinfo a:hover {
   color:#fff;
+}
+#content {
+  padding-left: 10px;
 }
 
 @media (max-width: 600px) {
-  .topbar {
+  #topbar {
+    position:fixed;
+    width:100%;
+    z-index:1000;
     padding:10px;
   }
-  .topbar h1 {
+  #topbar h1 {
     float: none;
     text-align: center;
   }
-  .topbar .userinfo {
+  #topbar .userinfo {
     float:none;
     line-height: 120%;
     text-align: center;
+  }
+  #content {
+    padding-top:67px;
+    padding-left: 0;
   }
 }

@@ -1,3 +1,5 @@
-.menubar {
-  display:none;
+@media (max-width: 600px) {
+  #content {
+    padding:87px 10px 10px 10px;
+  }
 }

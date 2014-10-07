@@ -92,7 +92,7 @@ exports.getCompilationTimes = function(req, res) {
     "inner join times.users u on u.username=t.username " +
     "where " + usersnip + "not elapsedtime is null and paused <> 1 and t.starttime >= '" + req.query.from + "' and t.starttime <= '" + req.query.to + "' " + filter + " " +
     "group by c.name, p.name, a.name, t.comment " +
-    "order by c.name";
+    "order by " + sortcol + " " + sortorder;
 
   db.connection.query(sql, function(err, rows) {
     if (err) console.log(err);

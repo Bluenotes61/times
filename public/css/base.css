@@ -36,6 +36,7 @@ img { border:0; }
 }
 .topbar .userinfo {
   float:right;
+  line-height: 180%;
 }
 .topbar .userinfo a {
   margin-left: 10px;
@@ -43,4 +44,19 @@ img { border:0; }
 }
 .topbar .userinfo a:hover {
   color:#fff;
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    padding:10px;
+  }
+  .topbar h1 {
+    float: none;
+    text-align: center;
+  }
+  .topbar .userinfo {
+    float:none;
+    line-height: 120%;
+    text-align: center;
+  }
 }

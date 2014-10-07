@@ -30,6 +30,53 @@ a.button:hover {
   box-shadow: 2px 2px 2px 1px #aaa;
 }
 
+#ended, #compilation {
+  display:none;
+}
+
+#ended {
+  width:99%;
+}
+#tabs {
+  padding-bottom:10px;
+}
+#tabs a {
+  display: inline-block;
+  padding:5px 10px;
+  color:#fff;
+  font-weight: bold;
+  background: #999;
+  border-radius: 0 0 4px 4px;
+}
+#tabs a:hover,
+#tabs a.active {
+  background: #363B48;
+}
+#navbuttons {
+  display:none;
+  position: fixed;
+  right:10px;
+  top:10px;
+}
+#navbuttons a {
+  display: block;
+  padding: 5px;
+  font-weight: bold;
+  border: solid 1px #fff;
+  border-radius: 4px;
+  background:#363B48;
+  color:#fff;
+}
+
+@media (max-width: 600px) {
+  #tabs {
+    display: none;
+  }
+  #navbuttons {
+    display: block;
+  }
+}
+
 .bookform {
   float:left;
   width:32%;
@@ -76,6 +123,9 @@ a.button:hover {
   margin-left: 10px;
 }
 
+.bookform.register {
+  margin-bottom:100px;
+}
 .register .elapsed {
   display: inline-block;
 }
@@ -91,8 +141,16 @@ a.button:hover {
   padding:0 5px;
 }
 
-@media (max-width: 600px) {
-  .grid {
-    display: none;
-  }
+#compilation .selectors {
+  margin:10px 0;
+}
+#compilation .selectors > div {
+  margin-bottom:5px;
+}
+#compilation .selectors span {
+  width:80px;
+  display: inline-block;
+}
+#compilation input {
+  width:90px;
 }

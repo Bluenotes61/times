@@ -55,6 +55,9 @@ $(document).ready(function(){
     initEndedGrid();
     initCompilationGrid();
     
+    $(window).bind('resize', function() {
+      $("#endedgrid").setGridWidth($(window).width() - 20);
+    });
 
     getActiveActivity(function(){
       initActivityCounter();  
@@ -717,7 +720,7 @@ $(document).ready(function(){
       pager: '#endedctrl',
       sortname: 'id',
       height:'100%',
-      width:900,
+      width:$(window).width() - 20,
       viewrecords: true
     }).navGrid(
       '#endedctrl',
@@ -797,7 +800,7 @@ $(document).ready(function(){
         { name:'activity', width:10, sortable:true },
         { name:'comment', width:15, sortable:true },
         { name:'user', width:8, sortable:true, hidden:true },
-        { name:'elapsedtime', width:7, search:false, sortable:false, formatter:formatElapsed }
+        { name:'elapsedtime', width:7, search:false, sortable:true, formatter:formatElapsed }
       ],
       datatype: "json",
       altRows:false,
@@ -808,7 +811,7 @@ $(document).ready(function(){
       footerrow: true,
       userDataOnFooter:true,
       height:'100%',
-      width:900,
+      width:$(window).width()-20,
       viewrecords: true,
       postData:{
         cols: 'customer,project,activity,comment,user,elapsedtime',

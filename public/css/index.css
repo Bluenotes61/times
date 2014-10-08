@@ -1,5 +1,5 @@
 #booking {
-  max-width: 900px;
+/*  max-width: 900px;*/
 }
 .error {
   border:solid 1px #f00 !important;
@@ -14,18 +14,19 @@
   padding: 5px;
 }
 a.button {
-  background-image: linear-gradient(to top, #ccc 0%, #eee 50%);
   display:inline-block;
   padding:5px 10px;
-  border:solid 1px #ccc;
-  border-radius: 4px;
-  box-shadow: 2px 2px 2px 2px #aaa;
-  transition: all 0.1s linear 0s;
   margin-top:10px;
   margin-right: 10px;
+  color:#fff;
+  font-weight: bold;
+  background: #999;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  background: #363B48;
 }
 a.button:hover {
-  box-shadow: 2px 2px 2px 1px #aaa;
+  background: #4f576d;
 }
 
 #ended, #compilation {
@@ -57,24 +58,8 @@ a.button:hover {
 #tabs a:hover,
 #tabs a.active {
   background: #363B48;
+  transition: background-color 0.2s ease;
 }
-#navbuttons {
-  display:none;
-  position: fixed;
-  right:10px;
-  top:5px;
-  z-index: 1001;
-}
-#navbuttons a {
-  display: block;
-  padding: 5px;
-  font-weight: bold;
-  border: solid 1px #fff;
-  border-radius: 4px;
-  background:#363B48;
-  color:#fff;
-}
-
 @media (max-width: 600px) {
   #tabs {
     display: none;
@@ -86,7 +71,7 @@ a.button:hover {
 
 .bookform {
   float:left;
-  width:32%;
+  width:49%;
   margin-right: 1%;
   min-width:200px;
   padding:15px;
@@ -109,10 +94,12 @@ a.button:hover {
 }
 .bookform .row > textarea {
   width: 100%;
+  max-width: 100%;
+  height: 60px;
 }
 
 .bookform .select2 {
-  width:95%;
+  width:94%;
 }
 
 .active .isactive {
@@ -137,7 +124,7 @@ a.button:hover {
   display: inline-block;
 }
 .register .adate {
-  width:90px;
+  width:88px;
   margin-right: 10px;
 }
 .settimepop input,
@@ -168,4 +155,8 @@ a.button:hover {
 
 .select2-results li:nth-child(even) {
   background: #eee;
+}
+
+.ui-jqgrid .ui-jqgrid-view {
+  font-size: 13px;
 }

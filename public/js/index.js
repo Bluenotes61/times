@@ -317,16 +317,6 @@ $(document).ready(function(){
       $("div.page").hide();
       $("#compilation").show();
     });
-    $("#navbuttons a.start").click(function(){
-      $('html, body').animate({
-        scrollTop: 0
-      }, 500);
-    });
-    $("#navbuttons a.register").click(function(){
-      $('html, body').animate({
-        scrollTop: $("#booking .register").offset().top - 60
-      }, 500);
-    });
 
 
     // Delete currently selected customer. Assigned to both customer dropdown delete buttons

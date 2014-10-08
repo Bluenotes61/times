@@ -128,6 +128,7 @@ $(document).ready(function(){
           $.get('/createcustomer', {name:name}, function(response) {
             id = response.id;
             customersDDStart.refreshData();
+            customersDDStart.select2("data", {id:id, text:name});
             customersDDRegister.refreshData();
             projectsDDStart.refreshData(id);
           });
@@ -154,6 +155,7 @@ $(document).ready(function(){
           $.get('/createcustomer', {name:name}, function(response) {
             id = response.id;
             customersDDRegister.refreshData();
+            customersDDRegister.select2("data", {id:id, text:name});
             customersDDStart.refreshData();
             projectsDDRegister.refreshData(id);
           });
@@ -178,7 +180,8 @@ $(document).ready(function(){
           var customerid = customersDDStart.select2("data").id;
           $.get('/createproject', {customerid:customerid, name:name}, function(response) {
             id = response.id;
-            projectsDDStart.refreshData();
+            projectsDDStart.refreshData(customerid);
+            projectsDDStart.select2("data", {id:id, text:name});
             activitiesDDStart.refreshData(id);
           });
         }
@@ -202,7 +205,8 @@ $(document).ready(function(){
           var customerid = customersDDRegister.select2("data").id;
           $.get('/createproject', {customerid:customerid, name:name}, function(response) {
             id = response.id;
-            projectsDDRegister.refreshData();
+            projectsDDRegister.refreshData(customerid);
+            projectsDDRegister.select2("data", {id:id, text:name});
             activitiesDDRegister.refreshData(id);
           });
         }
@@ -221,7 +225,8 @@ $(document).ready(function(){
           var projectid = projectsDDStart.select2("data").id;
           $.get('/createactivity', {projectid:projectid, name:name}, function(response) {
             id = response.id;
-            activitiesDDStart.refreshData(id);
+            activitiesDDStart.refreshData(projectid);
+            activitiesDDStart.select2("data", {id:id, text:name});
           });
         }
       }
@@ -236,7 +241,8 @@ $(document).ready(function(){
           var projectid = projectsDDRegister.select2("data").id;
           $.get('/createactivity', {projectid:projectid, name:name}, function(response) {
             id = response.id;
-            activitiesDDRegister.refreshData(id);
+            activitiesDDRegister.refreshData(projectid);
+            activitiesDDRegister.select2("data", {id:id, text:name});
           });
         }
       }

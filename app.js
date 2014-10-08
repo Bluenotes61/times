@@ -53,7 +53,7 @@ app.get("/getlatestactivities", mainpage.getLatestActivities);
 
 app.get("/createcustomer", mainpage.createCustomer);
 app.get("/createproject", mainpage.createProject);
-app.get("/createactivity", mainpage.createActivity);
+app.get("/createActivity", mainpage.createActivity);
 app.get("/deletecustomer", mainpage.deleteCustomer);
 app.get("/deleteproject", mainpage.deleteProject);
 app.get("/deleteactivity", mainpage.deleteActivity);

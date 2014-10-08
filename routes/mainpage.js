@@ -412,7 +412,7 @@ exports.createActivity = function(req, res) {
   getUser(req, res, function(user){
     var projectid = req.query.projectid;
     var aname = req.query.name;
-    db.connection.query("select * from times.activities where name='" + aname + "' and projectid=" + projectid, function(err, rows) {
+    db.connection.query("select * from times.activities where username='" + user.username + "' and name='" + aname + "' and projectid=" + projectid, function(err, rows) {
       if (err) console.log(err);
       if (rows.length > 0) {
         var id = rows[0].id;
@@ -421,7 +421,7 @@ exports.createActivity = function(req, res) {
         });
       }
       else {
-        db.connection.query("insert into times.activities (username, name, projectid, deleted) values('" + user.username + "', " + aname + "', " + customerid + ", 0)", function(err, response) {
+        db.connection.query("insert into times.activities (username, name, projectid, deleted) values('" + user.username + "', '" + aname + "', " + projectid + ", 0)", function(err, response) {
           res.json({id:response.insertId});
         });
       }

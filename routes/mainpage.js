@@ -1,4 +1,6 @@
 var db = require("./db.js");
+require("date-format-lite");
+Date.masks.default = 'YYYY-MM-DD hh:mm:ss';
 
 /*** Render page or redirect to login ***/
 exports.index = function(req, res) {
@@ -130,7 +132,7 @@ exports.saveTime = function(req, res) {
     var sql = "update rawtimes set " +
       "activityid=" + req.body.activity + "," +
       "comment='" + req.body.comment + "'," +
-      "starttime='" + timeToString(starttime) + "'," +
+      "starttime='" + starttime.format() + "'," +
       "elapsedtime=" + req.body.elapsedtime + " " +
       "where id=" + req.body.id;
     db.connection.query(sql, function(err, rows) {
@@ -215,7 +217,7 @@ exports.startActivity = function(req, res) {
     var projectid = req.query.projectid;
     var activityid = req.query.activityid;
     var comment = req.query.comment;
-    var starttime = timeToString(new Date(req.query.starttime));
+    var starttime = new Date(req.query.starttime).format();
 
     if (activityid == 0) { // Use an empty activity if not specified
       getEmptyActivity(user.username, projectid, function(id){
@@ -453,14 +455,6 @@ function doDeleteActivity(id) {
   db.connection.query("update times.activities set deleted=1 where id=" + id, function(err, response) {
     if (err) console.log(err);
   });
-};
-
-
-/*** Subtract the time offset from a given js Date and it to database friendly format ****/
-function timeToString(atime) {
-  if (atime.length == 0) return atime;
-  var newtime = new Date(atime.getTime() - atime.getTimezoneOffset()*60000);
-  return newtime.toISOString().replace(/T/, ' ').replace(/\..+/, '');
 };
 
 

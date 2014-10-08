@@ -5,5 +5,5 @@ module.exports.connection = mysql.createConnection({
   user     : 'webuser',
   password : 'n0ll.fyra.n0ll',
   database : 'times'
-  //,timezone : 'utc'
+  ,timezone : 'utc'
 });

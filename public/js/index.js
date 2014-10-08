@@ -56,7 +56,7 @@ $(document).ready(function(){
     initCompilationGrid();
     
     $(window).bind('resize', function() {
-      $("#endedgrid").setGridWidth($(window).width() - 20);
+      $("#endedgrid, #compilationgrid").setGridWidth($(window).width() - 20);
     });
 
     getActiveActivity(function(){
@@ -211,10 +211,40 @@ $(document).ready(function(){
         }
       }
     });
+
+    // Change start activity.
+    activitiesDDStart.on("change", function(){
+      if ($(this).select2("data") != null) {
+        var id = $(this).select2("data").id;
+        if (id == -1) { // Create new project
+          var name = $(this).select2("data").text;
+          var projectid = projectsDDStart.select2("data").id;
+          $.get('/createactivity', {projectid:projectid, name:name}, function(response) {
+            id = response.id;
+            activitiesDDStart.refreshData(id);
+          });
+        }
+      }
+    });
+
+    // Change register activity.
+    activitiesDDRegister.on("change", function(){
+      if ($(this).select2("data") != null) {
+        var id = $(this).select2("data").id;
+        if (id == -1) { // Create new project
+          var name = $(this).select2("data").text;
+          var projectid = projectsDDRegister.select2("data").id;
+          $.get('/createactivity', {projectid:projectid, name:name}, function(response) {
+            id = response.id;
+            activitiesDDRegister.refreshData(id);
+          });
+        }
+      }
+    });
   }
 
-  /*** Functions for gettiing data for dropdowns */
 
+  /*** Functions for gettiing data for dropdowns */
   function getLatestActivitiesData(dummy, callback){
     $.get('/getlatestactivities', {}, function(response) {
       if (response.err) console.log(response.err);

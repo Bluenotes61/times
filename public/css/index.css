@@ -31,6 +31,14 @@ a.button:hover {
 #ended, #compilation {
   display:none;
 }
+@media (max-width: 600px) {
+  #ended, #compilation {
+    display:none !important;
+  }
+  #booking {
+    display:block !important;
+  }
+}
 
 #ended {
   width:99%;
@@ -152,4 +160,12 @@ a.button:hover {
 }
 #compilation input {
   width:90px;
+}
+
+.select2-results .select2-highlighted {
+  background: #3875d7 !important;
+}
+
+.select2-results li:nth-child(even) {
+  background: #eee;
 }

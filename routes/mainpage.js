@@ -160,6 +160,25 @@ exports.getLatestActivities = function(req, res) {
   });
 }
 
+/*** Get the last registered activity ***/
+exports.getLastActivity = function(req, res) {
+  getUser(req, res, function(user){
+    var sql = "select a.name as activity, p.name as project, c.name as customer, rt.comment, rt.starttime, rt.elapsedtime " +
+      "from rawtimes rt " +
+      "inner join activities a on a.id=rt.activityid " +
+      "inner join projects p on p.id=a.projectid " +
+      "inner join customers c on c.id=p.customerid " +
+      "where a.deleted=0 and rt.username='" + user.username + "' and not rt.elapsedtime is null and rt.paused=0 " +
+      "order by rt.id desc limit 0, 1";
+    db.connection.query(sql, function(err, rows) {
+      if (err) console.log(err);
+      rows[0].starttime = new Date(rows[0].starttime).format("UTC:YYYY-MM-DD hh:mm");
+      res.json(rows[0]);
+    });
+  });
+}
+
+
 /*** Get customers data. No parameters **/
 exports.getCustomers = function(req, res) {
   db.connection.query("select id as value, name as label from customers where deleted=0 order by name", function(err, rows) {

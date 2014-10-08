@@ -63,6 +63,8 @@ $(document).ready(function(){
       initActivityCounter();  
     });
 
+    showLastActivity();
+
   }
 
   function setupSelectBoxes() {
@@ -477,6 +479,8 @@ $(document).ready(function(){
 
         initActivityCounter();
 
+        showLastActivity();
+
         if (callback) callback();
       });
     }
@@ -566,6 +570,7 @@ $(document).ready(function(){
         setTimeout(function(){
           $(".regbuttons .register").text("Registrera");
         }, 3000);
+        showLastActivity();
       }
     });
   }
@@ -625,14 +630,32 @@ $(document).ready(function(){
     });
   }
 
+
+  /*** Show last registered activity ***/
+  function showLastActivity() {
+    $.get("/getlastactivity", {}, function(response) {
+      $("#booking .last .customer").text(response.customer);
+      $("#booking .last .project").text(response.project);
+      $("#booking .last .activity").text(response.activity);
+      $("#booking .last .comment").text(response.comment);
+      $("#booking .last .starttime").text(response.starttime);
+      $("#booking .last .elapsed").text(formatElapsed(response.elapsedtime));
+    });
+  }
+
   /*** Show elapsed time for active activity ***/
   function showElapsed() {
     var minutes = activeActivity.pausedElapsed;
     if (!activeActivity.paused) 
       minutes += Math.floor((new Date() - activeActivity.starttime)/60000);
+    $("#booking .active .elapsed").text(formatElapsed(minutes));
+  }
+
+  /*** Format minutes to h:m format ***/
+  function formatElapsed(minutes) {
     var h = Math.floor(minutes/60);
     var m = minutes - h*60;
-    $("#booking .active .elapsed").text(h + " tim " + m + " min");
+    return h + " tim " + m + " min";
   }
 
   /*** Returns a jQuery object with attached data array and refreshing function ***/

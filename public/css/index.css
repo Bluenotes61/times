@@ -32,12 +32,18 @@ a.button:hover {
 #ended, #compilation {
   display:none;
 }
+#booking .last {
+  display: none;
+}
 @media (max-width: 600px) {
   #ended, #compilation {
     display:none !important;
   }
   #booking {
     display:block !important;
+  }
+  #booking .last {
+    display: block;
   }
 }
 
@@ -76,13 +82,17 @@ a.button:hover {
   min-width:200px;
   padding:15px;
   border:solid 1px #ccc;
-  margin-bottom:20px;
 }
 @media (max-width: 600px) {
   .bookform {
     width:100%;
     margin-right: 0;
-  }
+    border:none;
+    border-top: solid 10px #363B48;
+  };
+  .bookform:first-child {
+    border-top:none;
+  };
 }
 
 .bookform .row {
@@ -102,10 +112,6 @@ a.button:hover {
   width:94%;
 }
 
-.active .isactive {
-  display: none;
-}
-
 .stopbuttons .restart {
   display: none;
 }
@@ -117,9 +123,6 @@ a.button:hover {
   margin-left: 10px;
 }
 
-.bookform.register {
-  margin-bottom:100px;
-}
 .register .elapsed {
   display: inline-block;
 }

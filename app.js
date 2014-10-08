@@ -50,6 +50,7 @@ app.get("/stopactivity", mainpage.stopActivity);
 app.get("/registeractivity", mainpage.registerActivity);
 app.get("/getactiveactivity", mainpage.getActiveActivity);
 app.get("/getlatestactivities", mainpage.getLatestActivities);
+app.get("/getlastactivity", mainpage.getLastActivity);
 
 app.get("/createcustomer", mainpage.createCustomer);
 app.get("/createproject", mainpage.createProject);

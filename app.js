@@ -7,7 +7,7 @@ var session = require('express-session');
 
 var app = express();
 
-var server = app.listen(3000, function() {
+var server = app.listen(process.env.PORT, function() {
   console.log('Listening on port %d', server.address().port);
 });
 
@@ -53,6 +53,7 @@ app.get("/getlatestactivities", mainpage.getLatestActivities);
 
 app.get("/createcustomer", mainpage.createCustomer);
 app.get("/createproject", mainpage.createProject);
+app.get("/createActivity", mainpage.createActivity);
 app.get("/deletecustomer", mainpage.deleteCustomer);
 app.get("/deleteproject", mainpage.deleteProject);
 app.get("/deleteactivity", mainpage.deleteActivity);

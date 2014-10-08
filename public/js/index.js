@@ -56,7 +56,7 @@ $(document).ready(function(){
     initCompilationGrid();
     
     $(window).bind('resize', function() {
-      $("#endedgrid").setGridWidth($(window).width() - 20);
+      $("#endedgrid, #compilationgrid").setGridWidth($(window).width() - 20);
     });
 
     getActiveActivity(function(){
@@ -128,6 +128,7 @@ $(document).ready(function(){
           $.get('/createcustomer', {name:name}, function(response) {
             id = response.id;
             customersDDStart.refreshData();
+            customersDDStart.select2("data", {id:id, text:name});
             customersDDRegister.refreshData();
             projectsDDStart.refreshData(id);
           });
@@ -154,6 +155,7 @@ $(document).ready(function(){
           $.get('/createcustomer', {name:name}, function(response) {
             id = response.id;
             customersDDRegister.refreshData();
+            customersDDRegister.select2("data", {id:id, text:name});
             customersDDStart.refreshData();
             projectsDDRegister.refreshData(id);
           });
@@ -178,7 +180,8 @@ $(document).ready(function(){
           var customerid = customersDDStart.select2("data").id;
           $.get('/createproject', {customerid:customerid, name:name}, function(response) {
             id = response.id;
-            projectsDDStart.refreshData();
+            projectsDDStart.refreshData(customerid);
+            projectsDDStart.select2("data", {id:id, text:name});
             activitiesDDStart.refreshData(id);
           });
         }
@@ -202,7 +205,8 @@ $(document).ready(function(){
           var customerid = customersDDRegister.select2("data").id;
           $.get('/createproject', {customerid:customerid, name:name}, function(response) {
             id = response.id;
-            projectsDDRegister.refreshData();
+            projectsDDRegister.refreshData(customerid);
+            projectsDDRegister.select2("data", {id:id, text:name});
             activitiesDDRegister.refreshData(id);
           });
         }
@@ -211,10 +215,42 @@ $(document).ready(function(){
         }
       }
     });
+
+    // Change start activity.
+    activitiesDDStart.on("change", function(){
+      if ($(this).select2("data") != null) {
+        var id = $(this).select2("data").id;
+        if (id == -1) { // Create new project
+          var name = $(this).select2("data").text;
+          var projectid = projectsDDStart.select2("data").id;
+          $.get('/createactivity', {projectid:projectid, name:name}, function(response) {
+            id = response.id;
+            activitiesDDStart.refreshData(projectid);
+            activitiesDDStart.select2("data", {id:id, text:name});
+          });
+        }
+      }
+    });
+
+    // Change register activity.
+    activitiesDDRegister.on("change", function(){
+      if ($(this).select2("data") != null) {
+        var id = $(this).select2("data").id;
+        if (id == -1) { // Create new project
+          var name = $(this).select2("data").text;
+          var projectid = projectsDDRegister.select2("data").id;
+          $.get('/createactivity', {projectid:projectid, name:name}, function(response) {
+            id = response.id;
+            activitiesDDRegister.refreshData(projectid);
+            activitiesDDRegister.select2("data", {id:id, text:name});
+          });
+        }
+      }
+    });
   }
 
-  /*** Functions for gettiing data for dropdowns */
 
+  /*** Functions for gettiing data for dropdowns */
   function getLatestActivitiesData(dummy, callback){
     $.get('/getlatestactivities', {}, function(response) {
       if (response.err) console.log(response.err);

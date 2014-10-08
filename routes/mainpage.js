@@ -407,6 +407,28 @@ exports.createProject = function(req, res) {
   });
 };
 
+/*** Create a new activity. Parameters: projectid, name ***/
+exports.createActivity = function(req, res) {
+  getUser(req, res, function(user){
+    var projectid = req.query.projectid;
+    var aname = req.query.name;
+    db.connection.query("select * from times.activities where username='" + user.username + "' and name='" + aname + "' and projectid=" + projectid, function(err, rows) {
+      if (err) console.log(err);
+      if (rows.length > 0) {
+        var id = rows[0].id;
+        db.connection.query("update times.activities set deleted=0 where id=" + id, function(err, response) {
+          res.json({id:id});
+        });
+      }
+      else {
+        db.connection.query("insert into times.activities (username, name, projectid, deleted) values('" + user.username + "', '" + aname + "', " + projectid + ", 0)", function(err, response) {
+          res.json({id:response.insertId});
+        });
+      }
+    });
+  });
+};
+
 /*** Mark a customer and it's related projects as deleted. Parameter: customerid ***/
 exports.deleteCustomer = function(req, res) {
   var id = req.query.customerid;

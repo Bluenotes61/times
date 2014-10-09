@@ -296,7 +296,11 @@ exports.stopActivity = function(req, res) {
     var starttime = new Date(req.query.starttime);
     var stoptime = new Date(req.query.stoptime);
     var elapsed = parseInt((stoptime - starttime)/60000, 10);
-    if (elapsed > 0) {
+    if (elapsed != 0) {
+      while (elapsed < 0)
+        elapsed += 24*60;
+      while (elapsed > 24*60)
+        elapsed -= 24*60;
       var sql = "update rawtimes " + 
         "set elapsedtime=" + elapsed + ", " +
         "paused=" + req.query.paused + " " +

@@ -47,6 +47,11 @@ a.button:hover {
   }
 }
 
+#booking, #tabs {
+  max-width: 1000px;
+  margin:0 auto;
+}
+
 #ended {
   width:99%;
 }

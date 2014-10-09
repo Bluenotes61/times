@@ -50,7 +50,7 @@ $(document).ready(function(){
       if ($(this).val() == "_all_") $("#compilationgrid").showCol("user");
       else $("#compilationgrid").hideCol("user");
       $("#compilationgrid").trigger("reloadGrid");
-    }).datepicker({dateFormat:'yy-mm-dd'});
+    });
 
     initEndedGrid();
     initCompilationGrid();
@@ -620,6 +620,7 @@ $(document).ready(function(){
         activeActivity.activity = response.activity;
         activeActivity.activityid = response.aid;
         activeActivity.comment = response.comment;
+        console.log(response.starttime);
         activeActivity.starttime = new Date(response.starttime);
         activeActivity.pausedElapsed = response.pausedElapsed;
         activeActivity.paused = response.pausedElapsed > 0;
@@ -738,11 +739,6 @@ $(document).ready(function(){
         },
         {name:'comment', width:20, sortable:true, editable:true, edittype:'textarea' },
         {name:'startdate', width:8,
-          searchoptions:{
-            dataInit: function(elem) {
-              $(elem).datepicker({dateFormat:'yy-mm-dd'});
-            }
-          },
           editoptions: {
             dataInit: function(elem) {
               $(elem).datepicker({dateFormat:'yy-mm-dd'});

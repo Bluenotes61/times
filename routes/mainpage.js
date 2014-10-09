@@ -352,7 +352,8 @@ exports.getActiveActivity = function(req, res) {
       "order by rt.id desc";
     db.connection.query(sql, function(err, rows) {
       if (err) console.log(err);
-      if (rows.length > 0) {
+      if (rows.length >  0) {
+        rows[0].starttime = new Date(rows[0].starttime.getTime() + rows[0].starttime.getTimezoneOffset()*60*1000);
         rows[0].pausedElapsed = 0;
         if (rows[0].paused == 1) {
           getPausedElapsed(user.username, rows[0].aid, rows[0].id, function(elapsed){

@@ -533,7 +533,6 @@ $(document).ready(function(){
     }
     var hours = $(".register .elapsed .hours").val();
     var minutes = $(".register .elapsed .minutes").val();
-    console.log(hours, minutes);
     if (!$.isNumeric(hours) && !$.isNumeric(minutes)) {
       return errorOn(".register .activitydate .elapsed input");
     }
@@ -648,6 +647,8 @@ $(document).ready(function(){
     var minutes = activeActivity.pausedElapsed;
     if (!activeActivity.paused) 
       minutes += Math.floor((new Date() - activeActivity.starttime)/60000);
+    while (minutes < 0)
+      minutes += 24*60;
     $("#booking .active .elapsed").text(formatElapsed(minutes));
   }
 

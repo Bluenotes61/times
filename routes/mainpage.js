@@ -359,14 +359,10 @@ exports.getActiveActivity = function(req, res) {
       if (rows.length >  0) {
         rows[0].starttime = new Date(rows[0].starttime.getTime() + rows[0].starttime.getTimezoneOffset()*60*1000);
         rows[0].pausedElapsed = 0;
-        if (rows[0].paused == 1) {
-          getPausedElapsed(user.username, rows[0].aid, rows[0].id, function(elapsed){
-            rows[0].pausedElapsed = elapsed;
-            res.json(rows[0]);
-          });
-        }
-        else 
+        getPausedElapsed(user.username, rows[0].aid, rows[0].id, function(elapsed){
+          rows[0].pausedElapsed = elapsed;
           res.json(rows[0]);
+        });
       }
       else
         res.json(null);
@@ -378,7 +374,7 @@ exports.getActiveActivity = function(req, res) {
 /*** Sum elapsed time for all paused instances of the current activity ***/
 function getPausedElapsed(username, actid, rtid, callback) { 
   var sum = 0;
-  var sql = "select activityid, elapsedtime from times.rawtimes where username='" + username + "' and id <= " + rtid + " and paused=1 order by id desc limit 0, 50";
+  var sql = "select activityid, elapsedtime from times.rawtimes where username='" + username + "' and id <= " + rtid + " and paused=1 order by id desc limit 0, 100";
   db.connection.query(sql, function(err, rows) {
     if (err) console.log(err);
     var i = 0;

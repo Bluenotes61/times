@@ -591,7 +591,6 @@ $(document).ready(function(){
         $("#booking .active .stopbuttons .restart").show();
       }
       else {
-        console.log(activeActivity.starttime);
         var h = String(activeActivity.starttime.getHours());
         if (h.length < 2) h = "0" + h;
         var m = String(activeActivity.starttime.getMinutes());
@@ -620,7 +619,6 @@ $(document).ready(function(){
         activeActivity.activity = response.activity;
         activeActivity.activityid = response.aid;
         activeActivity.comment = response.comment;
-        console.log(response.starttime);
         activeActivity.starttime = new Date(response.starttime);
         activeActivity.pausedElapsed = response.pausedElapsed;
         activeActivity.paused = response.paused;

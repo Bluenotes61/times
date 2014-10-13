@@ -35,6 +35,11 @@ a.button:hover {
 #booking .last {
   display: none;
 }
+#booking .divider {
+  height:10px;
+  background: #363B48;
+  display:none;
+}
 @media (max-width: 600px) {
   #ended, #compilation {
     display:none !important;
@@ -44,6 +49,9 @@ a.button:hover {
   }
   #booking .last {
     display: block;
+  }
+  #booking .divider {
+    display:block;
   }
 }
 
@@ -93,7 +101,7 @@ a.button:hover {
     width:100%;
     margin-right: 0;
     border:none;
-    border-top: solid 10px #363B48;
+    float:none;
   };
   .bookform:first-child {
     border-top:none;

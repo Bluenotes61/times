@@ -6,9 +6,8 @@ exports.index = function(req, res) {
   var cookies = new Cookies(req, res);
   var guid = cookies.get("guid");
   if (guid && req.query.logout != "1") {
-    var sql = "select username, guid, isadmin, name from users where guid ='" + guid + "'";
-    db.connection.query(sql, function(err, rows) {
-      if (err) console.log(err);
+    var sql = "select username, guid, isadmin, name from users where guid=?";
+    db.runQuery(sql, [guid], function(err, rows) {
       if (rows.length == 0) {
         res.render("login", {title:"040 - Tidbokning"});
       }
@@ -31,9 +30,8 @@ exports.index = function(req, res) {
 exports.post = function(req, res) {
   var cookies = new Cookies(req, res);
   var b = req.body;
-  var sql = "select username, guid, isadmin, name from users where username ='" + b.username + "' AND password = '" + b.password + "'";
-  db.connection.query(sql, function(err, rows) {
-    if (err) console.log(err);
+  var sql = "select username, guid, isadmin, name from users where username=? AND password=?";
+  db.runQuery(sql, [b.username, b.password], function(err, rows) {
     if (rows.length == 0) {
       res.render("login", {title:"040 - Tidbokning", username:b.username});
     }

@@ -678,6 +678,9 @@ $(document).ready(function(){
       allowClear:true,
       data: function() { 
         return {results: dd.listData}; 
+      },
+      matcher: function(term, text) { // Searching items beginning with term
+        return text.toUpperCase().indexOf(term.toUpperCase()) == 0; 
       }
     });
     return dd;

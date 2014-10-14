@@ -29,6 +29,10 @@ a.button:hover {
   background: #4f576d;
 }
 
+input.hours, input.minutes {
+  width:50px;
+}
+
 #ended, #compilation {
   display:none;
 }
@@ -142,10 +146,6 @@ a.button:hover {
 .register .adate {
   width:88px;
   margin-right: 10px;
-}
-.settimepop input,
-.register .elapsed input {
-  width:50px;
 }
 .settimepop span {
   padding:0 5px;

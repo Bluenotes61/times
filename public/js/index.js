@@ -754,8 +754,9 @@ $(document).ready(function(){
         },
         {
           name:'elapsedtime', width:7, 
-          search:false, sortable:true, editable:true, 
-          formatter:formatElapsed, unformat:unformatElapsed, formoptions:{elmsuffix:'&nbsp;&nbsp;minuter'}
+          search:false, sortable:true, editable:true, edittype:"custom",
+          editoptions: {custom_element:createHMEdit, custom_value:getHMValue},
+          formatter:formatElapsed, unformat:unformatElapsed
         }
       ],
       datatype: "json",
@@ -780,6 +781,21 @@ $(document).ready(function(){
       {},
       {multipleSearch:true}
     ).filterToolbar();
+  }
+
+  /*** Create custom form elements for elapsed time in grid edit ***/
+  function createHMEdit(value, options) {
+    var h = Math.floor(value/60);
+    var m = value - h*60;
+    var span = document.createElement("span");
+    var html = "<input type='number' class='hours' max='23' min='0' value='" + h + "' />&nbsp;tim&nbsp;&nbsp;<input type='number' class='minutes' value='" + m + "' max='59' min='0' />&nbsp;min";
+    span.innerHTML = html;
+    return span;
+  }
+
+  /*** Retrieve value from custom elapsed input ***/
+  function getHMValue(elem, operation, value) {
+    return parseInt($(elem).find(".hours").val(), 10)*60 + parseInt($(elem).find(".minutes").val(), 10);
   }
 
   /*** Functions called from the endedgrid filling the dropdowns in edit mode ***/

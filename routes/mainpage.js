@@ -98,7 +98,9 @@ exports.getCompilationTimes = function(req, res) {
 
   db.connection.query(sql, function(err, rows) {
     if (err) console.log(err);
-    var totpages = (rows.length > 0 ? parseInt(Math.floor(rows.length/maxnof), 10) : 0);
+
+    var totpages = (rows.length > 0 ? parseInt(Math.floor(rows.length/maxnof) + 1, 10) : 0);
+    var totrows = rows.length;
     var rows2 = rows.splice(start, maxnof);
     var sum = 0;
     for (var i=0; i < rows2.length; i++)
@@ -110,7 +112,7 @@ exports.getCompilationTimes = function(req, res) {
     res.json({
       page:page,
       total:totpages,
-      records:rows.length,
+      records:totrows,
       rows:rows2,
       userdata: userdata
     });

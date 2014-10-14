@@ -64,7 +64,8 @@ $(document).ready(function(){
     });
 
     showLastActivity();
-
+    
+    setToday();
   }
 
   function setupSelectBoxes() {
@@ -302,6 +303,7 @@ $(document).ready(function(){
 
     // Tab clicks
     $("#tabs a.active").click(function(){
+      setToday();
       $("#tabs a").removeClass("active");
       $(this).addClass("active");
       $("div.page").hide();
@@ -692,6 +694,15 @@ $(document).ready(function(){
     return false;
   }
 
+  function setToday() {
+    function addZero(val) {
+      if (String(val).length < 2) return "0" + val;
+      else return val;
+    }
+    var now = new Date();
+    var datestr = now.getFullYear() + "-" + addZero(now.getMonth()+1) + "-" + addZero(now.getDate());
+    $(".register .activitydate .adate").val(datestr);
+  }
   
   /*** Functions for ended grid ***/
 

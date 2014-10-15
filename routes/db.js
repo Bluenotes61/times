@@ -1,12 +1,13 @@
-/*** Initialize database connection ***/
+/*** Database functionality ***/
+
 var mysql = require('mysql');
 module.exports.pool = mysql.createPool({
   connectionLimit: 20,
   host     : 'localhost',
   user     : 'root',
   password : 'n0ll.fyra.n0ll',
-  database : 'times'
-  ,timezone : 'utc'
+  database : 'times',
+  timezone : 'utc'
 });
 
 module.exports.runQuery = function(sql, parameters, callback) {

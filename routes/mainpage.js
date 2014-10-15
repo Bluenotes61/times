@@ -50,14 +50,14 @@ exports.getEndedTimes = function(req, res) {
       "inner join times.customers c on c.id=p.customerid " +
       "where t.username=? and not elapsedtime is null and paused <> 1 " + filter + " " +
       "order by " + sortcol + " " + sortorder;
-
     db.runQuery(sql, [user.username], function(err, rows) {
-      var totpages = (rows.length > 0 ? parseInt(Math.floor(rows.length/maxnof), 10) : 0);
+      var totpages = (rows.length > 0 ? parseInt(Math.floor(rows.length/maxnof) + 1, 10) : 0);
+      var totrows = rows.length;
       var rows2 = rows.splice(start, maxnof);
       res.json({
         page:page,
         total:totpages,
-        records:rows.length,
+        records:totrows,
         rows:rows2
       });
     });
@@ -96,7 +96,9 @@ exports.getCompilationTimes = function(req, res) {
     "order by " + sortcol + " " + sortorder;
 
   db.runQuery(sql, [req.query.from, req.query.to], function(err, rows) {
-    var totpages = (rows.length > 0 ? parseInt(Math.floor(rows.length/maxnof), 10) : 0);
+
+    var totpages = (rows.length > 0 ? parseInt(Math.floor(rows.length/maxnof) + 1, 10) : 0);
+    var totrows = rows.length;
     var rows2 = rows.splice(start, maxnof);
     var sum = 0;
     for (var i=0; i < rows2.length; i++)
@@ -108,7 +110,7 @@ exports.getCompilationTimes = function(req, res) {
     res.json({
       page:page,
       total:totpages,
-      records:rows.length,
+      records:totrows,
       rows:rows2,
       userdata: userdata
     });
@@ -302,20 +304,39 @@ exports.stopActivity = function(req, res) {
 /*** Register an activity ***/
 exports.registerActivity = function(req, res) {
   getUser(req, res, function(user){
+    var projectid = req.query.projectid;
     var activityid = req.query.activityid;
     var comment = req.query.comment;
     var adate = new Date(req.query.activitydate);
     var hours = (req.query.hours.length == 0 ? 0 : parseInt(req.query.hours, 10));
     var minutes = (req.query.minutes.length == 0 ? 0 : parseInt(req.query.minutes));
     var elapsed = hours*60 + minutes;
-    var sql = "insert into rawtimes " + 
-      "(username, activityid, comment, starttime, elapsedtime, paused) " +
-      "values (?, ?, ?, ?, ?, 0)"; 
-    db.runQuery(sql, [user.username, activityid, comment, adate, elapsed], function(err, result) {
-      res.json({err:err});
-    });
+    if (activityid == 0) { // Use an empty activity if not specified
+      getEmptyActivity(user.username, projectid, function(id){
+        activityid = id;
+        doRegisterActivity(user.username, activityid, comment, adate, elapsed, function(err){
+          res.json({err:err});
+        });
+      });
+    }
+    else {
+      doRegisterActivity(user.username, activityid, comment, adate, elapsed, function(err){
+        res.json({err:err});
+      });
+    }
   });
-};
+}
+
+
+/*** Add activity by adding a rawtimes post ***/
+function doRegisterActivity(username, activityid, comment, startdate, elapsed, callback) {
+  var sql = "insert into rawtimes " + 
+    "(username, activityid, comment, starttime, elapsedtime, paused) " +
+    "values (?, ?, ?, ?, ?, 0)"; 
+  db.runQuery(sql, [username, activityid, comment, startdate, elapsed], function(err, result) {
+    callback(err);
+  });
+}
 
 
 /*** Get the currently active avtivity from the database ***/
@@ -519,7 +540,7 @@ function getSqlOper(op, val) {
   else if (op == "lt") return "< " + eval;
   else if (op == "le") return "<= " + eval;
   else if (op == "gt") return "> " + eval;
-  else if (op == "ge") return ">= " + val;
+  else if (op == "ge") return ">= " + eval;
   else if (op == "bw") return "like " + db.pool.escape(val + "%");
   else if (op == "bn") return "not like " + db.pool.escape(val + "%");
   else if (op == "in") return "in (" + eval + ")";

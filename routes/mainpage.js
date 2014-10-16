@@ -1,6 +1,6 @@
 var db = require("./db.js");
 require("date-format-lite");
-Date.masks.default = 'YYYY-MM-DD hh:mm:ss';
+Date.masks.default = 'YYYY-MM-DD hh:mm';
 
 /*** Render page or redirect to login ***/
 exports.index = function(req, res) {
@@ -54,6 +54,10 @@ exports.getEndedTimes = function(req, res) {
       var totpages = (rows.length > 0 ? parseInt(Math.floor(rows.length/maxnof) + 1, 10) : 0);
       var totrows = rows.length;
       var rows2 = rows.splice(start, maxnof);
+      for (var i=0; i < rows2.length; i++) { // Convert to strings to avoit timezone problems
+        rows2[i].startdate = new Date(rows2[i].startdate).format();
+        rows2[i].starttime = new Date(rows2[i].starttime).format();
+      }
       res.json({
         page:page,
         total:totpages,
@@ -85,14 +89,14 @@ exports.getCompilationTimes = function(req, res) {
 
   var usersnip = (userguid == "_all_" ? "" : "u.guid=" + db.pool.escape(userguid) + " and ");
 
-  var sql = "select c.name as customer, p.name as project, a.name as activity, t.comment, u.name as user, SUM(t.elapsedtime) as elapsedtime " +
+  var sql = "select c.name as customer, p.name as project, a.name as activity, a.id as activityid, u.username as username, u.name as user, MIN(t.starttime) as mintime, MAX(t.starttime) as maxtime, SUM(t.elapsedtime) as elapsedtime " +
     "from times.rawtimes t " +
     "inner join times.activities a on a.id=t.activityid " +
     "inner join times.projects p on p.id=a.projectid " +
     "inner join times.customers c on c.id=p.customerid " +
     "inner join times.users u on u.username=t.username " +
     "where " + usersnip + "not elapsedtime is null and paused <> 1 and t.starttime >= ? and t.starttime <= ? " + filter + " " +
-    "group by c.name, p.name, a.name, t.comment " +
+    "group by c.name, p.name, a.name " +
     "order by " + sortcol + " " + sortorder;
 
   db.runQuery(sql, [req.query.from, req.query.to], function(err, rows) {
@@ -101,8 +105,10 @@ exports.getCompilationTimes = function(req, res) {
     var totrows = rows.length;
     var rows2 = rows.splice(start, maxnof);
     var sum = 0;
-    for (var i=0; i < rows2.length; i++)
+    for (var i=0; i < rows2.length; i++) {
       sum += rows2[i].elapsedtime
+      rows2[i].span = new Date(rows2[i].mintime).format("D/M") + " - " + new Date(rows2[i].maxtime).format("D/M");
+    }
     var userdata = {
       'comment':'Totalt:',
       'elapsedtime':sum
@@ -117,6 +123,32 @@ exports.getCompilationTimes = function(req, res) {
   });
 };
 
+/*** Get compilationgrid details data ***/
+exports.getCompilationDetails = function(req, res) {
+  var activityid = req.query.activityid;
+  var username = req.query.username;
+  var mintime = new Date(req.query.mintime);
+  var maxtime = new Date(req.query.maxtime);
+  var sql = "select starttime as startdate, starttime, comment, elapsedtime from rawtimes where activityid=? and username=? and starttime >= ? and starttime <=? order by starttime desc";
+  db.runQuery(sql, [activityid, username, mintime, maxtime], function(err, rows) {
+    var items = [];
+    for (var i=0; i < rows.length; i++) {
+      var h = parseInt(rows[i].elapsedtime/60);
+      var min = rows[i].elapsedtime - h*60;
+      var selapsed = h + " tim " + min + " min";
+      items.push({
+        "id":i,
+        "cell":[
+          new Date(rows[i].startdate).format("YYYY-MM-DD"),
+          new Date(rows[i].starttime).format("hh:mm"),
+          rows[i].comment,
+          selapsed
+        ]
+      });
+    }
+    res.json({rows:items});
+  });
+}
 
 /*** Save an edited registration from endedgrid or delete a registration ***/
 exports.saveTime = function(req, res) {
@@ -163,7 +195,7 @@ exports.getLastActivity = function(req, res) {
       "where a.deleted=0 and rt.username=? and not rt.elapsedtime is null and rt.paused=0 " +
       "order by rt.id desc limit 0, 1";
     db.runQuery(sql, [user.username], function(err, rows) {
-      rows[0].starttime = new Date(rows[0].starttime).format("UTC:YYYY-MM-DD hh:mm");
+      rows[0].starttime = new Date(rows[0].starttime).format("YYYY-MM-DD hh:mm");
       res.json(rows[0]);
     });
   });
@@ -247,7 +279,7 @@ exports.startActivity = function(req, res) {
 function doStartActivity(username, activityid, comment, starttime, callback) {
   var sql = "insert into times.rawtimes " + 
     "(username, activityid, comment, starttime) " +
-    "values (?, ?, ?, ?)"; 
+    "values (?, ?, ?, ?)";
   db.runQuery(sql, [username, activityid, comment, starttime], function(err, result) {
     var newid = result.insertId;
     getPausedElapsed(username, activityid, newid, function(elapsed){

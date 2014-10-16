@@ -847,7 +847,7 @@ $(document).ready(function(){
 
   /*** Called from the endedgrid. Formats/unformats elapsed time ***/
   function formatElapsed(cellValue, options, rowObject) {
-      var h = parseInt(cellValue/60);
+    var h = parseInt(cellValue/60);
     var min = cellValue - h*60;
     return h + " tim " + min + " min";
   }
@@ -865,16 +865,20 @@ $(document).ready(function(){
     $("#compilationgrid").jqGrid({
       url:"/getcompilationtimes",
       postData: {
-        idcol:"_id",
-        cols:"customer,project,activity,comment,user,elapsedtime"
+        idcol:"activityid",
+        cols:"customer,project,activity,activityid,user,username,mintime,maxtime,span,elapsedtime"
       },
-      colNames: ['Kund', 'Projekt', 'Aktivitet', 'Beskrivning', 'Användare', 'Tidsåtgång'],
+      colNames: ['Kund', 'Projekt', 'Aktivitet', '', 'Användare', '', '', '', 'Tidsspan', 'Tidsåtgång'],
       colModel:[
         { name:'customer', width:10, sortable:true },
         { name:'project', width:10, sortable:true },
         { name:'activity', width:10, sortable:true },
-        { name:'comment', width:15, sortable:true },
+        { name:'activityid', hidden:true },
         { name:'user', width:8, sortable:true, hidden:true },
+        { name:'username', hidden:true },
+        { name:'mintime', hidden:true },
+        { name:'maxtime', hidden:true },
+        { name:'span', width:8, sortable:false },
         { name:'elapsedtime', width:7, search:false, sortable:true, formatter:formatElapsed }
       ],
       datatype: "json",
@@ -889,11 +893,18 @@ $(document).ready(function(){
       width:$(window).width()-20,
       viewrecords: true,
       postData:{
-        cols: 'customer,project,activity,comment,user,elapsedtime',
+        cols: 'customer,project,activity,user,span,elapsedtime',
         from: function(){ return $("#compilation input.from").val(); },
         to: function(){ return $("#compilation input.to").val(); },
         userguid: function(){ return $("#compilation .curruser").val(); }
-      }
+      },
+      subGrid:true,
+      subGridUrl:"/getcompilationdetails",
+      subGridModel: [{ 
+        name : ['Datum', 'Starttid', 'Kommentar', 'Tidsåtgång'],
+        width : [100,80,250,120],
+        params: ["activityid", "username", "mintime", "maxtime"]
+      }],
     }).navGrid(
       '#compilationctrl',
       {edit:false,add:false,del:false},{},{},{},

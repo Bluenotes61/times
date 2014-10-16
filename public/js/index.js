@@ -310,12 +310,14 @@ $(document).ready(function(){
       $("#booking").show();
     });
     $("#tabs a.ended").click(function(){
+      $("#endedgrid").trigger("reloadGrid"); 
       $("#tabs a").removeClass("active");
       $(this).addClass("active");
       $("div.page").hide();
       $("#ended").show();
     });
     $("#tabs a.compilation").click(function(){
+      $("#compilationgrid").trigger("reloadGrid"); 
       $("#tabs a").removeClass("active");
       $(this).addClass("active");
       $("div.page").hide();

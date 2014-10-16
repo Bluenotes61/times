@@ -7,7 +7,6 @@ module.exports.pool = mysql.createPool({
   user     : 'root',
   password : 'n0ll.fyra.n0ll',
   database : 'times'
-  //,  timezone : 'utc'
 });
 
 module.exports.runQuery = function(sql, parameters, callback) {

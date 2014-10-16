@@ -158,8 +158,7 @@ exports.saveTime = function(req, res) {
     });
   }
   else if (req.body.oper == "edit") {
-    var starttime = new Date(req.body.startdate + " " + req.body.starttime);
-    var endtime = new Date(starttime.getTime() + req.body.elapsedtime*60000);
+    var starttime = new Date(req.body.startdate + " " + req.body.starttime).format();
     var sql = "update rawtimes set activityid=?, comment=?, starttime=?, elapsedtime=? where id=?";
     db.runQuery(sql, [req.body.activity, req.body.comment, starttime, req.body.elapsedtime, req.body.id], function(err, rows) {
       res.json({});

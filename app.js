@@ -39,6 +39,7 @@ app.get("/", mainpage.index);
 /*** Mainpage ajax functions ***/
 app.get("/getendedtimes", mainpage.getEndedTimes);
 app.get("/getcompilationtimes", mainpage.getCompilationTimes);
+app.get("/getcompilationdetails", mainpage.getCompilationDetails);
 app.post("/saveedittime", mainpage.saveTime);
 
 app.get("/getcustomers", mainpage.getCustomers);

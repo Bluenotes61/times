@@ -128,7 +128,7 @@ $(document).ready(function(){
         var id = $(this).select2("data").id;
         if (id == -1) { // Create new customer
           var name = $(this).select2("data").text;
-          $.get('/createcustomer', {name:name}, function(response) {
+          ajaxGet('/createcustomer', {name:name}, function(response) {
             id = response.id;
             customersDDStart.refreshData();
             customersDDStart.select2("data", {id:id, text:name});
@@ -155,7 +155,7 @@ $(document).ready(function(){
         var id = $(this).select2("data").id;
         if (id == -1) { // Create new customer
           var name = $(this).select2("data").text;
-          $.get('/createcustomer', {name:name}, function(response) {
+          ajaxGet('/createcustomer', {name:name}, function(response) {
             id = response.id;
             customersDDRegister.refreshData();
             customersDDRegister.select2("data", {id:id, text:name});
@@ -181,7 +181,7 @@ $(document).ready(function(){
         if (id == -1) { // Create new project
           var name = $(this).select2("data").text;
           var customerid = customersDDStart.select2("data").id;
-          $.get('/createproject', {customerid:customerid, name:name}, function(response) {
+          ajaxGet('/createproject', {customerid:customerid, name:name}, function(response) {
             id = response.id;
             projectsDDStart.refreshData(customerid);
             projectsDDStart.select2("data", {id:id, text:name});
@@ -206,7 +206,7 @@ $(document).ready(function(){
         if (id == -1) { // Create new project
           var name = $(this).select2("data").text;
           var customerid = customersDDRegister.select2("data").id;
-          $.get('/createproject', {customerid:customerid, name:name}, function(response) {
+          ajaxGet('/createproject', {customerid:customerid, name:name}, function(response) {
             id = response.id;
             projectsDDRegister.refreshData(customerid);
             projectsDDRegister.select2("data", {id:id, text:name});
@@ -226,7 +226,7 @@ $(document).ready(function(){
         if (id == -1) { // Create new project
           var name = $(this).select2("data").text;
           var projectid = projectsDDStart.select2("data").id;
-          $.get('/createactivity', {projectid:projectid, name:name}, function(response) {
+          ajaxGet('/createactivity', {projectid:projectid, name:name}, function(response) {
             id = response.id;
             activitiesDDStart.refreshData(projectid);
             activitiesDDStart.select2("data", {id:id, text:name});
@@ -242,7 +242,7 @@ $(document).ready(function(){
         if (id == -1) { // Create new project
           var name = $(this).select2("data").text;
           var projectid = projectsDDRegister.select2("data").id;
-          $.get('/createactivity', {projectid:projectid, name:name}, function(response) {
+          ajaxGet('/createactivity', {projectid:projectid, name:name}, function(response) {
             id = response.id;
             activitiesDDRegister.refreshData(projectid);
             activitiesDDRegister.select2("data", {id:id, text:name});
@@ -255,7 +255,7 @@ $(document).ready(function(){
 
   /*** Functions for gettiing data for dropdowns */
   function getLatestActivitiesData(dummy, callback){
-    $.get('/getlatestactivities', {}, function(response) {
+    ajaxGet('/getlatestactivities', {}, function(response) {
       if (response.err) console.log(response.err);
       var latestData = [];
       for (var i=0; i < response.data.length; i++) {
@@ -268,7 +268,7 @@ $(document).ready(function(){
   }
 
   function getCustomersData(dummy, callback) {
-    $.get('/getcustomers', {}, function(response) {
+    ajaxGet('/getcustomers', {}, function(response) {
       if (response.err) console.log(response.err);
       var custData = [];
       for (var i=0; i < response.data.length; i++)
@@ -278,7 +278,7 @@ $(document).ready(function(){
   }
 
   function getProjectsData(customerid, callback) {
-    $.get('/getprojects', {customer: customerid}, function(response) {
+    ajaxGet('/getprojects', {customer: customerid}, function(response) {
       if (response.err) console.log(response.err);
       var projectsData = [];
       for (var i=0; i < response.data.length; i++)
@@ -288,7 +288,7 @@ $(document).ready(function(){
   }
 
   function getActivitiesData(projectid, callback) {
-    $.get('/getactivities', {project: projectid}, function(response) {
+    ajaxGet('/getactivities', {project: projectid}, function(response) {
       if (response.err) console.log(response.err);
       var actData = [];
       for (var i=0; i < response.data.length; i++)
@@ -335,7 +335,7 @@ $(document).ready(function(){
         var name = customersDD.select2("data").text;
         if (confirm("Är du säker på att du vill ta bort kunden " + name + " från databasen?")) {
           var id = customersDD.select2("data").id;
-          $.get('/deletecustomer', {customerid: id}, function() {
+          ajaxGet('/deletecustomer', {customerid: id}, function() {
             customersDDStart.refreshData();
             customersDDRegister.refreshData();
             customersDD.select2("data", null);
@@ -358,7 +358,7 @@ $(document).ready(function(){
         var name = projectsDD.select2("data").text;
         if (confirm("Är du säker på att du vill ta bort projektet " + name + " från databasen?")) {
           var id = projectsDD.select2("data").id;
-          $.get('/deleteproject', {projectid: id}, function() {
+          ajaxGet('/deleteproject', {projectid: id}, function() {
             var customerid = customersDD.select2("data").id;
             projectsDD.refreshData(customerid);
             projectsDD.select2("data", null);
@@ -378,7 +378,7 @@ $(document).ready(function(){
         var name = activitiesDD.select2("data").text;
         if (confirm("Är du säker på att du vill ta bort aktivitieten " + name + " från databasen?")) {
           var id = activitiesDD.select2("data").id;
-          $.get('/deleteactivity', {activityid: id}, function() {
+          ajaxGet('/deleteactivity', {activityid: id}, function() {
             var projectid = projectsDD.select2("data").id;
             activitiesDD.refreshData(projectid);
             activitiesDD.select2("data", null);
@@ -454,7 +454,7 @@ $(document).ready(function(){
       activeActivity.comment = $("div.start .comment").val();
       activeActivity.starttime = starttime;
       activeActivity.pausedElapsed = 0;
-      $.get('/startactivity', {
+      ajaxGet('/startactivity', {
         projectid: projectsDDStart.select2("data").id,
         activityid: activeActivity.activityid, 
         comment: activeActivity.comment, 
@@ -470,7 +470,7 @@ $(document).ready(function(){
   /*** Stops the currently active activity ***/
   function stopActivity(stoptime, callback) {
     if (activeActivity.id != 0) {
-      $.get('/stopactivity', {id:activeActivity.id, starttime:activeActivity.starttime, stoptime:stoptime, paused:0}, function() {
+      ajaxGet('/stopactivity', {id:activeActivity.id, starttime:activeActivity.starttime, stoptime:stoptime, paused:0}, function() {
 
         clearInterval(elapsedTimer);
         $("#booking .active .stopnuttons .pause").show();
@@ -497,7 +497,7 @@ $(document).ready(function(){
   function pauseActivity() {
     if (activeActivity.id != 0) {
       var stoptime = new Date();
-      $.get('/stopactivity', {id:activeActivity.id, starttime:activeActivity.starttime, stoptime:stoptime, paused:1}, function(response) {
+      ajaxGet('/stopactivity', {id:activeActivity.id, starttime:activeActivity.starttime, stoptime:stoptime, paused:1}, function(response) {
         clearInterval(elapsedTimer);
         $("#booking .active .stopnuttons .pause").hide();
         $("#booking .active .stopnuttons .restart").show();
@@ -511,7 +511,7 @@ $(document).ready(function(){
   /*** Restarts a paused activity ***/
   function restartActivity() {
     activeActivity.starttime = new Date();
-    $.get('/startactivity', {
+    ajaxGet('/startactivity', {
       activityid: activeActivity.activityid, 
       comment: activeActivity.comment, 
       starttime: activeActivity.starttime
@@ -550,7 +550,7 @@ $(document).ready(function(){
     var projectid = projectsDDRegister.select2("data").id;
     var activityid = (activitiesDDRegister.select2("data") ? activitiesDDRegister.select2("data").id : 0);
     var comment = $(".register .comment").val();
-    $.get('/registeractivity', {
+    ajaxGet('/registeractivity', {
       projectid: projectid, 
       activityid: activityid, 
       comment: comment, 
@@ -615,7 +615,7 @@ $(document).ready(function(){
 
   /*** Gets the currently active activity from the database. Called att page load ***/
   function getActiveActivity(callback) {
-    $.get("/getactiveactivity", {}, function(response) {
+    ajaxGet("/getactiveactivity", {}, function(response) {
       if (response) {
         activeActivity.id = response.id;
         activeActivity.customer = response.customer;
@@ -636,7 +636,7 @@ $(document).ready(function(){
 
   /*** Show last registered activity ***/
   function showLastActivity() {
-    $.get("/getlastactivity", {}, function(response) {
+    ajaxGet("/getlastactivity", {}, function(response) {
       $("#booking .last .customer").text(response.customer);
       $("#booking .last .project").text(response.project);
       $("#booking .last .activity").text(response.activity);
@@ -708,6 +708,23 @@ $(document).ready(function(){
     var datestr = now.getFullYear() + "-" + addZero(now.getMonth()+1) + "-" + addZero(now.getDate());
     $(".register .activitydate .adate").val(datestr);
   }
+
+  /*** Perform an ajax request and include the current user guid in the call ***/
+  /*** As node express cannot perform redirects on ajax calls, that is done here if no user is found ***/
+  function ajaxGet(funcname, params, callback) {
+    var guid = "";
+    var idx = window.location.href.indexOf("?guid=");
+    if (idx > 0) guid = window.location.href.substring(idx + 6);
+    if (guid.length == 0) 
+      window.location.href = "/login";
+    params.guid = guid;
+    $.get(funcname, params, function(response) {
+      if (response && response.error == "No user")
+        window.location.href = "/login";
+      callback(response);
+    });
+  }
+
   
   /*** Functions for ended grid ***/
 
@@ -818,7 +835,7 @@ $(document).ready(function(){
   function fillEditCustomersDropown() {
     var rowid = $("#endedgrid").jqGrid ('getGridParam', 'selrow');
     var currcust = $("#endedgrid").jqGrid("getCell", rowid, "customer");
-    $.get('/getcustomers', {}, function(response) {
+    ajaxGet('/getcustomers', {}, function(response) {
       var sel = $("select#customer").empty();
       for (var i=0; i < response.data.length; i++)
         sel.append("<option value='" + response.data[i].value + "' role='option' " + (response.data[i].label == currcust ? "selected" : "") + ">" + response.data[i].label + "</option>");
@@ -829,7 +846,7 @@ $(document).ready(function(){
   function fillEditProjectsDropown(currcust, changed) {
     var rowid = $("#endedgrid").jqGrid ('getGridParam', 'selrow');
     var currproj = (changed ? "" : $("#endedgrid").jqGrid("getCell", rowid, "project"));
-    $.get('/getprojects?byname=1', {customer:currcust}, function(response) {
+    ajaxGet('/getprojects?byname=1', {customer:currcust}, function(response) {
       var sel = $("select#project").empty();
       for (var i=0; i < response.data.length; i++)
         sel.append("<option value='" + response.data[i].value + "' role='option' " + (response.data[i].label == currproj ? "selected" : "") + ">" + response.data[i].label + "</option>");
@@ -840,7 +857,7 @@ $(document).ready(function(){
   function fillEditActivitiesDropown(currproj, changed) {
     var rowid = $("#endedgrid").jqGrid ('getGridParam', 'selrow');
     var curract = (changed ? "" : $("#endedgrid").jqGrid("getCell", rowid, "activity"));
-    $.get('/getactivities?byname=1', {project:currproj}, function(response) {
+    ajaxGet('/getactivities?byname=1', {project:currproj}, function(response) {
       var sel = $("select#activity").empty();
       for (var i=0; i < response.data.length; i++)
         sel.append("<option value='" + response.data[i].value + "' role='option' " + (response.data[i].label == curract ? "selected" : "") + ">" + response.data[i].label + "</option>");

@@ -14,7 +14,7 @@ exports.index = function(req, res) {
       else {
         req.session.loggedinUser = rows[0];
         cookies.set("guid", rows[0].guid, {expires:new Date(new Date().getTime() + 7*24*3600*1000)});
-        res.redirect("/?guid=" + rows[0].guid);
+        res.redirect("/?guid=" + rows[0].guid); 
       }
     });
   }

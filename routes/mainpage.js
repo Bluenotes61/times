@@ -4,18 +4,23 @@ Date.masks.default = 'YYYY-MM-DD hh:mm';
 
 /*** Render page or redirect to login ***/
 exports.index = function(req, res) {
-  getUser(req, res, function(user){
-    if (user.isadmin) {
-      db.runQuery("select guid, name from times.users where isactive=1 order by name", {}, function(err, rows) {
-        var useroptions = "<option value='_all_'>Alla</option>";
-        for (var i=0; i < rows.length; i++) {
-          useroptions += "<option value='" + rows[i].guid + "' " + (rows[i].guid == user.guid ? "selected='selected'" : "") + ">" + rows[i].name + "</option>";
-        }
-        res.render("index", {title:"Boka tider", username:user.username, user_name:user.name, isadmin:user.isadmin, useroptions:useroptions});
-      });
+  getUser(req, res, false, function(user){
+    if (!user) { 
+      res.redirect("/login");
     }
-    else 
-      res.render("index", {title:"Boka tider", username:user.username, user_name:user.name, isadmin:user.isadmin, userguid:user.guid});
+    else {
+      if (user.isadmin) {
+        db.runQuery("select guid, name from times.users where isactive=1 order by name", {}, function(err, rows) {
+          var useroptions = "<option value='_all_'>Alla</option>";
+          for (var i=0; i < rows.length; i++) {
+            useroptions += "<option value='" + rows[i].guid + "' " + (rows[i].guid == user.guid ? "selected='selected'" : "") + ">" + rows[i].name + "</option>";
+          }
+          res.render("index", {title:"Boka tider", username:user.username, user_name:user.name, isadmin:user.isadmin, useroptions:useroptions});
+        });
+      }
+      else 
+        res.render("index", {title:"Boka tider", username:user.username, user_name:user.name, isadmin:user.isadmin, userguid:user.guid});
+    }
   });
 };
 
@@ -23,7 +28,7 @@ exports.index = function(req, res) {
 /*** Ajax calls ***/
 
 exports.getEndedTimes = function(req, res) {
-  getUser(req, res, function(user){
+  getUser(req, res, true, function(user){
     var page = req.query.page;
     var maxnof = req.query.rows;
     var sortcol = req.query.sidx;;
@@ -169,7 +174,7 @@ exports.saveTime = function(req, res) {
 
 /*** Get the 10 latest activities ***/
 exports.getLatestActivities = function(req, res) {
-  getUser(req, res, function(user){
+  getUser(req, res, true, function(user){
     var sql = "select distinct a.id as aid, a.name as aname, p.id as pid, p.name as pname, c.id as cid, c.name as cname " +
       "from rawtimes rt " +
       "inner join activities a on a.id=rt.activityid " +
@@ -185,7 +190,7 @@ exports.getLatestActivities = function(req, res) {
 
 /*** Get the last registered activity ***/
 exports.getLastActivity = function(req, res) {
-  getUser(req, res, function(user){
+  getUser(req, res, true, function(user){
     var sql = "select a.name as activity, p.name as project, c.name as customer, rt.comment, rt.starttime, rt.elapsedtime " +
       "from rawtimes rt " +
       "inner join activities a on a.id=rt.activityid " +
@@ -194,8 +199,12 @@ exports.getLastActivity = function(req, res) {
       "where a.deleted=0 and rt.username=? and not rt.elapsedtime is null and rt.paused=0 " +
       "order by rt.id desc limit 0, 1";
     db.runQuery(sql, [user.username], function(err, rows) {
-      rows[0].starttime = new Date(rows[0].starttime).format("YYYY-MM-DD hh:mm");
-      res.json(rows[0]);
+      if (!err && rows.length > 0) {
+        rows[0].starttime = new Date(rows[0].starttime).format("YYYY-MM-DD hh:mm");
+        res.json(rows[0]);
+      }
+      else
+        res.json(null);
     });
   });
 }
@@ -229,7 +238,7 @@ exports.getProjects = function(req, res) {
 
 /*** Get activities data. Parameters: byname, project **/
 exports.getActivities = function(req, res) {
-  getUser(req, res, function(user){
+  getUser(req, res, true, function(user){
     var project = req.query.project;
     var sql = "select " +
       "a.id as value, a.name as label " +
@@ -251,7 +260,7 @@ exports.getActivities = function(req, res) {
 
 /*** Start time count for an active avtivity ***/
 exports.startActivity = function(req, res) {
-  getUser(req, res, function(user){
+  getUser(req, res, true, function(user){
     var projectid = req.query.projectid;
     var activityid = req.query.activityid;
     var comment = req.query.comment;
@@ -305,7 +314,7 @@ function getEmptyActivity(username, projectid, callback) {
 
 /*** Stop time count for the active avtivity and save elapsed time ***/
 exports.stopActivity = function(req, res) {
-  getUser(req, res, function(user){
+  getUser(req, res, true, function(user){
     if (req.query.paused != 1) { 
       db.runQuery("update rawtimes set paused=0 where username=?", [user.username], function(err, result) {});
     }
@@ -334,7 +343,7 @@ exports.stopActivity = function(req, res) {
 
 /*** Register an activity ***/
 exports.registerActivity = function(req, res) {
-  getUser(req, res, function(user){
+  getUser(req, res, true, function(user){
     var projectid = req.query.projectid;
     var activityid = req.query.activityid;
     var comment = req.query.comment;
@@ -372,7 +381,7 @@ function doRegisterActivity(username, activityid, comment, startdate, elapsed, c
 
 /*** Get the currently active avtivity from the database ***/
 exports.getActiveActivity = function(req, res) {
-  getUser(req, res, function(user){
+  getUser(req, res, true, function(user){
     var sql = "select c.name as customer, a.id as cid, p.name as project, p.id as pid, a.name as activity, a.id as aid, rt.id as id, rt.starttime, rt.comment, rt.paused " +
       "from times.rawtimes rt " +
       "inner join times.activities a on " +
@@ -454,7 +463,7 @@ exports.createProject = function(req, res) {
 
 /*** Create a new activity. Parameters: projectid, name ***/
 exports.createActivity = function(req, res) {
-  getUser(req, res, function(user){
+  getUser(req, res, true, function(user){
     var projectid = req.query.projectid;
     var aname = req.query.name;
     db.runQuery("select * from times.activities where username=? and name=? and projectid=?", [user.username, aname, projectid], function(err, rows) {
@@ -519,18 +528,21 @@ function doDeleteActivity(id) {
 function debug(subject, message) {
   db.runQuery("insert into times.debug (debugdate, subject, message) values(NOW(), ?, ?)", [subject, message], function(err, response) {});
 };
-
+ 
 
 /*** Get the currently logged in user. If query parameter guid is incorrect, redirect to login page. ***/
-function getUser(req, res, callback) {
+function getUser(req, res, ajaxcall, callback) {
   if (!req.session.loggedinUser) {
-    var guid = req.query.guid;
     db.runQuery("select username, isadmin, guid, name from times.users where guid=?", [req.query.guid], function(err, rows) {
-      if (rows.length == 0)
-        res.redirect("/login");
+      if (rows.length == 0) {
+        if (ajaxcall)
+          res.json({data:null, error:"No user"});
+        else
+          callback(null);
+      }
       else {
         req.session.loggedinUser = rows[0];
-        callback(req.session.loggedinUser);
+        callback(req.session.loggedinUser); 
       }
     });
   }

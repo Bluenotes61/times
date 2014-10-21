@@ -14,12 +14,9 @@ module.exports.runQuery = function(sql, parameters, callback) {
   obj.pool.getConnection(function(err, connection) {
     if (err) {
       console.log("Connection error: " + err);
-      callback(err);
+      callback("Connection error: " + err);
       return;
     }
-    connection.on('error', function(err) {
-      console.log("Connection error: " + err);
-    });    
     var query = connection.query(sql, parameters, function(sqlerr, response) {
       if (sqlerr) {
         console.log(query.sql);

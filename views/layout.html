@@ -5,14 +5,16 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
     <title>040 - Tidregistrering</title>
+    <link rel="shortcut icon" type="image/png" href="/gfx/favicon.png"/>
     <link rel='stylesheet' href='/css/base.css' />
     {{{yield-styles}}}
     <script src='/js/jquery-1.10.2.min.js'></script>
     {{{yield-scripts}}}
   </head>
   <body>
+    <div id='ajaxloader'><img src='/gfx/ajax-load.gif' alt='Vänta...' /></div>
     <div id='topbar' class='clearfix'>
-      <h1> 040 - Tidregistrering</h1>
+      <div class='left'><img src='/gfx/040_logo.png' alt='040' /><h1>Tidregistrering</h1></div>
       <div class='userinfo'>
         <span>{{user_name}}</span>
         <a class='logout' href='login?logout=1'>Logga ut</a>

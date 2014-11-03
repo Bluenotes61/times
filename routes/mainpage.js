@@ -1,4 +1,5 @@
 var db = require("./db.js");
+var Cookies = require("cookies");
 require("date-format-lite");
 Date.masks.default = 'YYYY-MM-DD hh:mm';
 
@@ -532,8 +533,10 @@ function debug(subject, message) {
 
 /*** Get the currently logged in user. If query parameter guid is incorrect, redirect to login page. ***/
 function getUser(req, res, ajaxcall, callback) {
-  if (!req.session.loggedinUser) {
-    db.runQuery("select username, isadmin, guid, name from times.users where guid=?", [req.query.guid], function(err, rows) {
+  if (!req.session.loggedinUser) { 
+    var cookies = new Cookies(req, res);
+    var guid = cookies.get("guid");
+    db.runQuery("select username, isadmin, name from times.users where guid=?", [guid], function(err, rows) {
       if (rows.length == 0) {
         if (ajaxcall)
           res.json({data:null, error:"No user"});

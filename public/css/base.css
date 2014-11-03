@@ -28,18 +28,35 @@ img { border:0; }
   clear: both;
 }
 
+#ajaxloader {
+  position: absolute;
+  width:100px;
+  right:0;
+  left:0;
+  margin:26px auto 0 auto;
+  display: none;
+}
+
 #topbar {
   background:#363B48;
-  padding:20px;
+  padding:10px;
   color:#fff;
 }
-#topbar h1 {
+#topbar .left {
   float: left;
+}
+#topbar .left h1,
+#topbar .left img {
+  vertical-align: middle;
   color:#fff;
+  display: inline-block;
+}
+#topbar .left img {
+  margin-right: 10px;
 }
 #topbar .userinfo {
   float:right;
-  line-height: 180%;
+  line-height: 40px;
 }
 #topbar .userinfo a {
   margin-left: 10px;
@@ -59,17 +76,18 @@ img { border:0; }
     z-index:1000;
     padding:10px;
   }
-  #topbar h1 {
+  #topbar .left {
     float: none;
     text-align: center;
   }
   #topbar .userinfo {
     float:none;
+    margin-top: 10px;
     line-height: 120%;
     text-align: center;
   }
   #content {
-    padding-top:67px;
+    padding-top:86px;
     padding-left: 0;
   }
 }

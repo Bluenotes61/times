@@ -712,16 +712,12 @@ $(document).ready(function(){
   /*** Perform an ajax request and include the current user guid in the call ***/
   /*** As node express cannot perform redirects on ajax calls, that is done here if no user is found ***/
   function ajaxGet(funcname, params, callback) {
-    var guid = "";
-    var idx = window.location.href.indexOf("?guid=");
-    if (idx > 0) guid = window.location.href.substring(idx + 6);
-    if (guid.length == 0) 
-      window.location.href = "/login";
-    params.guid = guid;
+    $("#ajaxloader").show();
     $.get(funcname, params, function(response) {
       if (response && response.error == "No user")
         window.location.href = "/login";
       callback(response);
+      $("#ajaxloader").hide();
     });
   }
 

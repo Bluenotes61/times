@@ -34,6 +34,7 @@ img { border:0; }
   right:0;
   left:0;
   margin:26px auto 0 auto;
+  z-index:1001;
   display: none;
 }
 

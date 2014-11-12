@@ -731,11 +731,14 @@ $(document).ready(function(){
       editurl:'/saveedittime',
       postData: {
         idcol:"_id",
-        cols:"id,customer,project,activity,comment,startdate,starttime,elapsedtime"
+        cols:"id,cid,pid,aid,customer,project,activity,comment,startdate,starttime,elapsedtime"
       },
-      colNames: ['','Kund', 'Projekt', 'Aktivitet', 'Beskrivning', 'Datum', 'Starttid', 'Tidsåtgång'],
+      colNames: ['','', '', '', 'Kund', 'Projekt', 'Aktivitet', 'Beskrivning', 'Datum', 'Starttid', 'Tidsåtgång'],
       colModel:[
         {name:'id', hidden:true, width:0 },
+        {name:'cid', hidden:true, width:0 },
+        {name:'pid', hidden:true, width:0 },
+        {name:'aid', hidden:true, width:0 },
         {
           name:'customer', width:8,
           sortable:true, editable:true, edittype:"select",
@@ -744,7 +747,9 @@ $(document).ready(function(){
             dataEvents: [{
               type:"change",
               fn: function(){
-                fillEditProjectsDropown($("#customer option:selected").text(), true);
+                var cid = $("#customer").val();
+                if (cid.length == 0) cid = "0";
+                fillEditProjectsDropown(cid, true);
               }
             }]
           }
@@ -757,7 +762,9 @@ $(document).ready(function(){
             dataEvents: [{
               type:"change",
               fn: function(){
-                fillEditActivitiesDropown($("#project option:selected").text(), true);
+                var pid = $("#project").val();
+                if (pid.length == 0) pid = "0";
+                fillEditActivitiesDropown(pid, true);
               }
             }]
           }
@@ -830,33 +837,37 @@ $(document).ready(function(){
   /*** Functions called from the endedgrid filling the dropdowns in edit mode ***/
   function fillEditCustomersDropown() {
     var rowid = $("#endedgrid").jqGrid ('getGridParam', 'selrow');
-    var currcust = $("#endedgrid").jqGrid("getCell", rowid, "customer");
+    var currcust = $("#endedgrid").jqGrid("getCell", rowid, "cid");
     ajaxGet('/getcustomers', {}, function(response) {
       var sel = $("select#customer").empty();
-      for (var i=0; i < response.data.length; i++)
-        sel.append("<option value='" + response.data[i].value + "' role='option' " + (response.data[i].label == currcust ? "selected" : "") + ">" + response.data[i].label + "</option>");
+      for (var i=0; i < response.data.length; i++) 
+        sel.append("<option value='" + response.data[i].value + "' role='option'>" + response.data[i].label + "</option>");
+      sel.val(currcust);
       fillEditProjectsDropown(currcust);
     });
   }
 
   function fillEditProjectsDropown(currcust, changed) {
     var rowid = $("#endedgrid").jqGrid ('getGridParam', 'selrow');
-    var currproj = (changed ? "" : $("#endedgrid").jqGrid("getCell", rowid, "project"));
-    ajaxGet('/getprojects?byname=1', {customer:currcust}, function(response) {
+    var currproj = (changed ? "" : $("#endedgrid").jqGrid("getCell", rowid, "pid"));
+    ajaxGet('/getprojects', {customer:currcust}, function(response) {
       var sel = $("select#project").empty();
-      for (var i=0; i < response.data.length; i++)
-        sel.append("<option value='" + response.data[i].value + "' role='option' " + (response.data[i].label == currproj ? "selected" : "") + ">" + response.data[i].label + "</option>");
+      for (var i=0; i < response.data.length; i++) 
+        sel.append("<option value='" + response.data[i].value + "' role='option'>" + response.data[i].label + "</option>");
+      sel.val(currproj);
+      if (currproj.length == 0) currproj = "0";
       fillEditActivitiesDropown(currproj, changed);
     });
   }
 
   function fillEditActivitiesDropown(currproj, changed) {
     var rowid = $("#endedgrid").jqGrid ('getGridParam', 'selrow');
-    var curract = (changed ? "" : $("#endedgrid").jqGrid("getCell", rowid, "activity"));
-    ajaxGet('/getactivities?byname=1', {project:currproj}, function(response) {
+    var curract = (changed ? "" : $("#endedgrid").jqGrid("getCell", rowid, "aid"));
+    ajaxGet('/getactivities', {project:currproj}, function(response) {
       var sel = $("select#activity").empty();
-      for (var i=0; i < response.data.length; i++)
-        sel.append("<option value='" + response.data[i].value + "' role='option' " + (response.data[i].label == curract ? "selected" : "") + ">" + response.data[i].label + "</option>");
+      for (var i=0; i < response.data.length; i++) 
+        sel.append("<option value='" + response.data[i].value + "' role='option'>" + response.data[i].label + "</option>");
+      sel.val(curract);
     });
   }
 

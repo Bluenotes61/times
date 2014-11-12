@@ -49,7 +49,7 @@ exports.getEndedTimes = function(req, res) {
     }
     var start = maxnof*(page - 1);
 
-    var sql = "select t.id, c.name as customer, p.name as project, a.name as activity, t.comment, t.starttime as startdate, t.starttime, t.elapsedtime  " +
+    var sql = "select t.id, c.id as cid, c.name as customer, p.id as pid, p.name as project, a.id as aid, a.name as activity, t.comment, t.starttime as startdate, t.starttime, t.elapsedtime  " +
       "from times.rawtimes t " +
       "inner join times.activities a on a.id=t.activityid " +
       "inner join times.projects p on p.id=a.projectid " +
@@ -218,41 +218,35 @@ exports.getCustomers = function(req, res) {
   });
 };
 
-/*** Get projects data. Parameters: byname, customer ***/
+/*** Get projects data. Parameters: customer ***/
 exports.getProjects = function(req, res) {
-  var customer = req.query.customer;
+  var customerid = req.query.customer;
   var sql = "select " +
     "p.id as value, p.name as label " +
     "from projects p " +
     "inner join customers c on " +
-    "c.id = p.customerid ";
-  if (req.query.byname)
-    sql += "where c.name=? ";
-  else
-    sql += "where p.deleted=0 and c.id=? ";
-  sql += "order by p.name";
-  db.runQuery(sql, [customer], function(err, rows) {
+    "c.id = p.customerid " +
+    "where p.deleted=0 and c.id=? " +
+    "order by p.name";
+  db.runQuery(sql, [parseInt(customerid)], function(err, rows) {
     res.json({data:rows, err:err});
   });
 };
 
 
-/*** Get activities data. Parameters: byname, project **/
+/*** Get activities data. Parameters: project **/
 exports.getActivities = function(req, res) {
   getUser(req, res, true, function(user){
-    var project = req.query.project;
+    var projectid = req.query.project;
     var sql = "select " +
       "a.id as value, a.name as label " +
       "from activities a " +
       "inner join projects p on " +
-      "p.id = a.projectid ";
-    if (req.query.byname)
-      sql += "where p.name=? and ";
-    else
-      sql += "where a.deleted=0 and p.id=? and ";
-    sql += "a.username = ? " +
-       "order by p.name";
-    db.runQuery(sql, [project, user.username], function(err, rows) {
+      "p.id = a.projectid " +
+      "where a.deleted=0 and p.id=? and " +
+      "a.username = ? " +
+      "order by p.name";
+    db.runQuery(sql, [parseInt(projectid), user.username], function(err, rows) {
       res.json({data:rows, err:err});
     });
   });

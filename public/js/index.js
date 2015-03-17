@@ -273,6 +273,7 @@ $(document).ready(function(){
       var custData = [];
       for (var i=0; i < response.data.length; i++)
         custData.push({id:response.data[i].value, text:response.data[i].label});
+      console.log(custData);
       callback(custData);
     });
   }

@@ -164,13 +164,29 @@ exports.saveTime = function(req, res) {
     });
   }
   else if (req.body.oper == "edit") {
-    var starttime = new Date(req.body.startdate + " " + req.body.starttime).format();
-    var sql = "update rawtimes set activityid=?, comment=?, starttime=?, elapsedtime=? where id=?";
-    db.runQuery(sql, [req.body.activity, req.body.comment, starttime, req.body.elapsedtime, req.body.id], function(err, rows) {
-      res.json({});
+    getActivityToSave(req, res, function(activityid){
+      var starttime = new Date(req.body.startdate + " " + req.body.starttime).format();
+      var sql = "update rawtimes set activityid=?, comment=?, starttime=?, elapsedtime=? where id=?";
+      db.runQuery(sql, [activityid, req.body.comment, starttime, req.body.elapsedtime, req.body.id], function(err, rows) {
+        res.json({});
+      });
     });
   }
 };
+
+function getActivityToSave(req, res, callback) {
+  var activityid = req.body.activity;
+  if (!activityid) {
+    getUser(req, res, true, function(user){
+      var projectid = parseInt(req.body.project);
+      getEmptyActivity(user.username, projectid, function(id){
+        callback(id);
+      });
+    });
+  }
+  else
+    callback(activityid);
+}
  
 
 /*** Get the 10 latest activities ***/
@@ -245,7 +261,7 @@ exports.getActivities = function(req, res) {
       "p.id = a.projectid " +
       "where a.deleted=0 and p.id=? and " +
       "a.username = ? " +
-      "order by p.name";
+      "order by a.name";
     db.runQuery(sql, [parseInt(projectid), user.username], function(err, rows) {
       res.json({data:rows, err:err});
     });

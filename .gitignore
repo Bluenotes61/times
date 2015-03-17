@@ -1,0 +1,6 @@
+._*
+.DS_STORE
+.sub*
+/private
+node_modules
+/public/generated

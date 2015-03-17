@@ -1,13 +1,9 @@
 /*** Database functionality ***/
 
 var mysql = require('mysql');
-module.exports.pool = mysql.createPool({
-  connectionLimit: 20,
-  host     : 'localhost',
-  user     : 'root',
-  password : 'n0ll.fyra.n0ll',
-  database : 'times'
-});
+var config = require("../config.js")
+
+module.exports.pool = mysql.createPool(config.database);
 
 module.exports.runQuery = function(sql, parameters, callback) {
   var obj = this;

@@ -4,10 +4,11 @@ var methodOverride = require('method-override');
 var staticFolder = require('static');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
+var config = require('./config.js');
 
 var app = express();
 
-var server = app.listen(3000, function() {
+var server = app.listen(config.server.port, function() {
   console.log('Listening on port %d', server.address().port);
 });
 

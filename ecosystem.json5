@@ -1,0 +1,19 @@
+{
+  /**
+   * Configuration file for PM2
+   */
+
+  apps : [
+
+    {
+      name      : "040times",
+      script    : "app.js",
+      env: {
+        COMMON_VARIABLE: "true"
+      },
+      env_production : {
+        NODE_ENV: "production"
+      }
+    }
+  ]
+}

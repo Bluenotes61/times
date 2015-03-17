@@ -16,7 +16,10 @@
     "method-override": "*",
     "static":"*",
     "express-session":"*",
-    "dateformat":"*"
+    "dateformat":"*",
+    "mysql": "*",
+    "date-format-lite": "*",
+    "cookie-parser":"*"
   },
   "devDependencies": {
     "nodemon": "*"

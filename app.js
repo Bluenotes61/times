@@ -5,7 +5,7 @@ var staticFolder = require('static');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var config = require('./config.js');
-
+    
 var app = express();
 
 var server = app.listen(config.server.port, function() {

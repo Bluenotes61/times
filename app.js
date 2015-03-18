@@ -24,7 +24,11 @@ app.engine('html', require('hogan-express'));
 app.use(bodyParser());
 app.use(methodOverride());
 app.use(cookieParser());
-app.use(session({secret:'En hemlighet'}));
+app.use(session({
+  secret:'En hemlighet',                
+  resave:true, 
+  saveUninitialized:true
+}));   
 app.use(express.static(__dirname + '/public'));
 app.disable('etag'); // Prevent caching
 

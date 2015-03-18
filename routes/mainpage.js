@@ -547,7 +547,7 @@ function getUser(req, res, ajaxcall, callback) {
     var cookies = new Cookies(req, res);
     var guid = cookies.get("guid");
     db.runQuery("select username, isadmin, name from users where guid=?", [guid], function(err, rows) {
-      if (rows.length == 0) {
+      if (err || rows.length == 0) {
         if (ajaxcall)
           res.json({data:null, error:"No user"});
         else

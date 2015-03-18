@@ -4,6 +4,7 @@ var methodOverride = require('method-override');
 var staticFolder = require('static');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
+var routes = require("./helpers/routes.js");  
 var config = require('./config.js');
     
 var app = express();
@@ -27,40 +28,7 @@ app.use(session({secret:'En hemlighet'}));
 app.use(express.static(__dirname + '/public'));
 app.disable('etag'); // Prevent caching
 
-
-var loginpage = require("./routes/loginpage.js");
-var mainpage = require("./routes/mainpage.js");
-
-app.get("/login", loginpage.index);
-app.post("/login", loginpage.post);
-
-app.get("/", mainpage.index);
-
-
-/*** Mainpage ajax functions ***/
-app.get("/getendedtimes", mainpage.getEndedTimes);
-app.get("/getcompilationtimes", mainpage.getCompilationTimes);
-app.get("/getcompilationdetails", mainpage.getCompilationDetails);
-app.post("/saveedittime", mainpage.saveTime);
-
-app.get("/getcustomers", mainpage.getCustomers);
-app.get("/getprojects", mainpage.getProjects);
-app.get("/getactivities", mainpage.getActivities);
-
-app.get("/startactivity", mainpage.startActivity);
-app.get("/stopactivity", mainpage.stopActivity);
-app.get("/registeractivity", mainpage.registerActivity);
-app.get("/getactiveactivity", mainpage.getActiveActivity);
-app.get("/getlatestactivities", mainpage.getLatestActivities);
-app.get("/getlastactivity", mainpage.getLastActivity);
-
-app.get("/createcustomer", mainpage.createCustomer);
-app.get("/createproject", mainpage.createProject);
-app.get("/createActivity", mainpage.createActivity);
-app.get("/deletecustomer", mainpage.deleteCustomer);
-app.get("/deleteproject", mainpage.deleteProject);
-app.get("/deleteactivity", mainpage.deleteActivity);
-
+app.use(routes);          
 
 /// catch 404 and forwarding to error handler
 app.use(function(req, res, next) {

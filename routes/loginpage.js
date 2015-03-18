@@ -1,4 +1,4 @@
-var db = require("./db.js");
+var db = require("../helpers/db.js");
 var Cookies = require("cookies");
 
 /*** Render page ***/

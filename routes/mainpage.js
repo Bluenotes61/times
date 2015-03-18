@@ -11,7 +11,7 @@ exports.index = function(req, res) {
     }
     else {
       if (user.isadmin) {
-        db.runQuery("select guid, name from times.users where isactive=1 order by name", {}, function(err, rows) {
+        db.runQuery("select guid, name from users where isactive=1 order by name", {}, function(err, rows) {
           var useroptions = "<option value='_all_'>Alla</option>";
           for (var i=0; i < rows.length; i++) {
             useroptions += "<option value='" + rows[i].guid + "' " + (rows[i].guid == user.guid ? "selected='selected'" : "") + ">" + rows[i].name + "</option>";
@@ -50,10 +50,10 @@ exports.getEndedTimes = function(req, res) {
     var start = maxnof*(page - 1);
 
     var sql = "select t.id, c.id as cid, c.name as customer, p.id as pid, p.name as project, a.id as aid, a.name as activity, t.comment, t.starttime as startdate, t.starttime, t.elapsedtime  " +
-      "from times.rawtimes t " +
-      "inner join times.activities a on a.id=t.activityid " +
-      "inner join times.projects p on p.id=a.projectid " +
-      "inner join times.customers c on c.id=p.customerid " +
+      "from rawtimes t " +
+      "inner join activities a on a.id=t.activityid " +
+      "inner join projects p on p.id=a.projectid " +
+      "inner join customers c on c.id=p.customerid " +
       "where t.username=? and not elapsedtime is null and paused <> 1 " + filter + " " +
       "order by " + sortcol + " " + sortorder;
     db.runQuery(sql, [user.username], function(err, rows) {
@@ -96,11 +96,11 @@ exports.getCompilationTimes = function(req, res) {
   var usersnip = (userguid == "_all_" ? "" : "u.guid=" + db.pool.escape(userguid) + " and ");
 
   var sql = "select c.name as customer, p.name as project, a.name as activity, a.id as activityid, u.username as username, u.name as user, MIN(t.starttime) as mintime, MAX(t.starttime) as maxtime, SUM(t.elapsedtime) as elapsedtime " +
-    "from times.rawtimes t " +
-    "inner join times.activities a on a.id=t.activityid " +
-    "inner join times.projects p on p.id=a.projectid " +
-    "inner join times.customers c on c.id=p.customerid " +
-    "inner join times.users u on u.username=t.username " +
+    "from rawtimes t " +
+    "inner join activities a on a.id=t.activityid " +
+    "inner join projects p on p.id=a.projectid " +
+    "inner join customers c on c.id=p.customerid " +
+    "inner join users u on u.username=t.username " +
     "where " + usersnip + "not elapsedtime is null and paused <> 1 and t.starttime >= ? and t.starttime <= ? " + filter + " " +
     "group by c.name, p.name, a.name " +
     "order by " + sortcol + " " + sortorder;
@@ -296,7 +296,7 @@ exports.startActivity = function(req, res) {
 
 /*** Start activity by adding a rawtimes post ***/
 function doStartActivity(username, activityid, comment, starttime, callback) {
-  var sql = "insert into times.rawtimes " + 
+  var sql = "insert into rawtimes " + 
     "(username, activityid, comment, starttime) " +
     "values (?, ?, ?, ?)";
   db.runQuery(sql, [username, activityid, comment, starttime], function(err, result) {
@@ -310,12 +310,12 @@ function doStartActivity(username, activityid, comment, starttime, callback) {
 
 /*** Get or create an unnamed activity for the project ***/
 function getEmptyActivity(username, projectid, callback) {
-  db.runQuery("select id from times.activities where projectid=? and username=? and name=''", [projectid, username], function(err, rows) {
+  db.runQuery("select id from activities where projectid=? and username=? and name=''", [projectid, username], function(err, rows) {
     if (rows.length > 0) {
       callback(rows[0].id);
     }
     else {
-      db.runQuery("insert into times.activities (username, projectid, name, deleted) values(?, ?, '', 0)", [username, projectid], function(err, response) {
+      db.runQuery("insert into activities (username, projectid, name, deleted) values(?, ?, '', 0)", [username, projectid], function(err, response) {
         callback(response.insertId);
       });
     }
@@ -394,12 +394,12 @@ function doRegisterActivity(username, activityid, comment, startdate, elapsed, c
 exports.getActiveActivity = function(req, res) {
   getUser(req, res, true, function(user){
     var sql = "select c.name as customer, a.id as cid, p.name as project, p.id as pid, a.name as activity, a.id as aid, rt.id as id, rt.starttime, rt.comment, rt.paused " +
-      "from times.rawtimes rt " +
-      "inner join times.activities a on " +
+      "from rawtimes rt " +
+      "inner join activities a on " +
       "a.id=rt.activityid " +
       "inner join projects p on " +
       "p.id=a.projectid " +
-      "inner join times.customers c on " +
+      "inner join customers c on " +
       "c.id=p.customerid " +
       "where rt.username=? and (rt.elapsedtime is null or rt.paused=1) " +
       "order by rt.id desc";
@@ -422,7 +422,7 @@ exports.getActiveActivity = function(req, res) {
 /*** Sum elapsed time for all paused instances of the current activity ***/
 function getPausedElapsed(username, actid, rtid, callback) { 
   var sum = 0;
-  var sql = "select activityid, elapsedtime from times.rawtimes where username=? and id <= ? and paused=1 order by id desc limit 0, 100";
+  var sql = "select activityid, elapsedtime from rawtimes where username=? and id <= ? and paused=1 order by id desc limit 0, 100";
   db.runQuery(sql, [username, rtid], function(err, rows) {
     var i = 0;
     while (i < rows.length && rows[i].activityid == actid) {
@@ -437,15 +437,15 @@ function getPausedElapsed(username, actid, rtid, callback) {
 /*** Create a new customer. Parameter: name ***/
 exports.createCustomer = function(req, res) {
   var aname = req.query.name;
-  db.runQuery("select * from times.customers where name=?", [aname], function(err, rows) {
+  db.runQuery("select * from customers where name=?", [aname], function(err, rows) {
     if (rows.length > 0) {
       var id = rows[0].id;
-      db.runQuery("update times.customers set deleted=0 where id=?", [id], function(err, response) {
+      db.runQuery("update customers set deleted=0 where id=?", [id], function(err, response) {
         res.json({id:id});
       });
     }
     else {
-      db.runQuery("insert into times.customers (name, deleted) values(?, 0)", [aname], function(err, response) {
+      db.runQuery("insert into customers (name, deleted) values(?, 0)", [aname], function(err, response) {
         res.json({id:response.insertId});
       });
     }
@@ -457,15 +457,15 @@ exports.createCustomer = function(req, res) {
 exports.createProject = function(req, res) {
   var customerid = req.query.customerid;
   var aname = req.query.name;
-  db.runQuery("select * from times.projects where name=? and customerid=?", [aname, customerid], function(err, rows) {
+  db.runQuery("select * from projects where name=? and customerid=?", [aname, customerid], function(err, rows) {
     if (rows.length > 0) {
       var id = rows[0].id;
-      db.runQuery("update times.projects set deleted=0 where id=?", [id], function(err, response) {
+      db.runQuery("update projects set deleted=0 where id=?", [id], function(err, response) {
         res.json({id:id});
       });
     }
     else {
-      db.runQuery("insert into times.projects (name, customerid, deleted) values(?, ?, 0)", [aname, customerid], function(err, response) {
+      db.runQuery("insert into projects (name, customerid, deleted) values(?, ?, 0)", [aname, customerid], function(err, response) {
         res.json({id:response.insertId});
       });
     }
@@ -477,15 +477,15 @@ exports.createActivity = function(req, res) {
   getUser(req, res, true, function(user){
     var projectid = req.query.projectid;
     var aname = req.query.name;
-    db.runQuery("select * from times.activities where username=? and name=? and projectid=?", [user.username, aname, projectid], function(err, rows) {
+    db.runQuery("select * from activities where username=? and name=? and projectid=?", [user.username, aname, projectid], function(err, rows) {
       if (rows.length > 0) {
         var id = rows[0].id;
-        db.runQuery("update times.activities set deleted=0 where id=?", [id], function(err, response) {
+        db.runQuery("update activities set deleted=0 where id=?", [id], function(err, response) {
           res.json({id:id});
         });
       }
       else {
-        db.runQuery("insert into times.activities (username, name, projectid, deleted) values(?, ?, ?, 0)", [user.username, aname, projectid], function(err, response) {
+        db.runQuery("insert into activities (username, name, projectid, deleted) values(?, ?, ?, 0)", [user.username, aname, projectid], function(err, response) {
           res.json({id:response.insertId});
         });
       }
@@ -496,8 +496,8 @@ exports.createActivity = function(req, res) {
 /*** Mark a customer and it's related projects as deleted. Parameter: customerid ***/
 exports.deleteCustomer = function(req, res) {
   var id = req.query.customerid;
-  db.runQuery("update times.customers set deleted=1 where id=?", [id], function(err, response) {});
-  db.runQuery("select id from times.projects where customerid=?", [id], function(err, rows) {
+  db.runQuery("update customers set deleted=1 where id=?", [id], function(err, response) {});
+  db.runQuery("select id from projects where customerid=?", [id], function(err, rows) {
     for (var i=0; i < rows.length; i++)
       doDeleteProject(rows[i].id);
   });
@@ -522,8 +522,8 @@ exports.deleteActivity = function(req, res) {
 
 /** Do the database update for marking a project as deleted ***/
 function doDeleteProject(id) {
-  db.runQuery("update times.projects set deleted=1 where id=?", [id], function(err, response) {});
-  db.runQuery("select id from times.activities where projectid=?", [id], function(err, rows) {
+  db.runQuery("update projects set deleted=1 where id=?", [id], function(err, response) {});
+  db.runQuery("select id from activities where projectid=?", [id], function(err, rows) {
     for (var i=0; i < rows.length; i++)
       doDeleteActivity(rows[i].id);
   });
@@ -532,12 +532,12 @@ function doDeleteProject(id) {
 
 /** Do the database update for marking an activity as deleted ***/
 function doDeleteActivity(id) {
-  db.runQuery("update times.activities set deleted=1 where id=?", [id], function(err, response) {});
+  db.runQuery("update activities set deleted=1 where id=?", [id], function(err, response) {});
 };
 
 /** Log debug message in console and database ***/
 function debug(subject, message) {
-  db.runQuery("insert into times.debug (debugdate, subject, message) values(NOW(), ?, ?)", [subject, message], function(err, response) {});
+  db.runQuery("insert into debug (debugdate, subject, message) values(NOW(), ?, ?)", [subject, message], function(err, response) {});
 };
  
 
@@ -546,7 +546,7 @@ function getUser(req, res, ajaxcall, callback) {
   if (!req.session.loggedinUser) { 
     var cookies = new Cookies(req, res);
     var guid = cookies.get("guid");
-    db.runQuery("select username, isadmin, name from times.users where guid=?", [guid], function(err, rows) {
+    db.runQuery("select username, isadmin, name from users where guid=?", [guid], function(err, rows) {
       if (rows.length == 0) {
         if (ajaxcall)
           res.json({data:null, error:"No user"});

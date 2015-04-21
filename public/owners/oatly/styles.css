@@ -1,0 +1,78 @@
+@font-face {
+  font-family: "magdaotregular";
+  font-style: normal;
+  font-weight: normal;
+  src: url("http://oatly.com/daligstamningikyldisken/wp-content/themes/oatly_hcp/fonts/magdaot-webfont.eot?#iefix") format("embedded-opentype"), url("http://oatly.com/daligstamningikyldisken/wp-content/themes/oatly_hcp/fonts/magdaot-webfont.woff2") format("woff2"), url("http://oatly.com/daligstamningikyldisken/wp-content/themes/oatly_hcp/fonts/magdaot-webfont.woff") format("woff"), url("http://oatly.com/daligstamningikyldisken/wp-content/themes/oatly_hcp/fonts/magdaot-webfont.ttf") format("truetype"), url("http://oatly.com/daligstamningikyldisken/wp-content/themes/oatly_hcp/fonts/magdaot-webfont.svg#magdaotregular") format("svg");
+}
+@font-face {
+  font-family: "johnrounded_proregular";
+  font-style: normal;
+  font-weight: normal;
+  src: url("http://oatly.com/daligstamningikyldisken/wp-content/themes/oatly_hcp/fonts/johnroundedpro-webfont.eot?#iefix") format("embedded-opentype"), url("http://oatly.com/daligstamningikyldisken/wp-content/themes/oatly_hcp/fonts/johnroundedpro-webfont.woff2") format("woff2"), url("http://oatly.com/daligstamningikyldisken/wp-content/themes/oatly_hcp/fonts/johnroundedpro-webfont.woff") format("woff"), url("http://oatly.com/daligstamningikyldisken/wp-content/themes/oatly_hcp/fonts/johnroundedpro-webfont.ttf") format("truetype"), url("http://oatly.com/daligstamningikyldisken/wp-content/themes/oatly_hcp/fonts/johnroundedpro-webfont.svg#johnrounded_proregular") format("svg");
+}
+
+body {
+  background:url("http://oatly.com/daligstamningikyldisken/wp-content/themes/oatly_hcp/img/background.jpg");
+}
+body, input, textarea {
+  font-family: magdaotregular, courier, monospace;
+  font-size: 16px;
+  line-height: 120%;
+}
+
+h1, h2, h3, h4, a.delete { 
+  font-family: johnrounded_proregular, Helvetica, Arial, sans-serif;
+}
+
+
+#topbar {
+  background:url(bg-brown.jpg);
+  color:#000;
+}
+#topbar h1 {
+  color:#000;
+}
+
+#topbar .userinfo a {
+  color:#282828;
+}
+#topbar .userinfo a:hover {
+  color:#666;
+}
+#tabs a {
+  background:url(bg-brown.jpg);
+  opacity:0.5;
+  transition: color 0.3s ease, opacity 0.3s ease;
+  color:#fff;
+}
+#tabs a:hover,
+#tabs a.active {
+  opacity:1;
+  color:#000;
+}
+
+.loginbox {
+  border:solid 3px #282828;
+}
+.loginbox input[type=text],
+.loginbox input[type=password] {
+  border:solid 1px #282828;
+}
+
+
+.button {
+  transition: color 0.3s ease;
+  color:#000;
+  background:url(bg-brown.jpg);
+}
+.button:hover {
+  color:#fff;
+}
+
+input.adate {
+  width:105px;
+}
+input.hours, input.minutes {
+  width:55px;
+}
+

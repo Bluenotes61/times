@@ -9,7 +9,7 @@ var config = require('./config.js');
     
 var app = express();
 
-var server = app.listen(config.server.port, function() {
+var server = app.listen(config.port, function() {
   console.log('Listening on port %d', server.address().port);
 });
 
@@ -17,7 +17,6 @@ var server = app.listen(config.server.port, function() {
 app.set('views', __dirname + '/views');
 app.set('view engine', 'html');
 app.set('layout', 'layout');
-//app.enable('view cache');
 app.engine('html', require('hogan-express'));
 
 

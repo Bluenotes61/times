@@ -1,0 +1,39 @@
+#topbar {
+  background:#363B48;
+  color:#fff;
+}
+#topbar h1 {
+  color:#fff;
+}
+
+#topbar .userinfo a {
+  color:#ccc;
+}
+#topbar .userinfo a:hover {
+  color:#fff;
+}
+
+#tabs a {
+  color:#fff;
+  background: #999;
+}
+#tabs a:hover,
+#tabs a.active {
+  background: #363B48;
+}
+
+.loginbox {
+  border:solid 3px #363B48;
+}
+.loginbox input[type=text],
+.loginbox input[type=password] {
+  border:solid 1px #363B48;
+}
+
+.button {
+  color:#fff;
+  background: #363B48;
+}
+.button:hover {
+  background: #4f576d;
+}

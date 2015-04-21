@@ -1,3 +1,11 @@
+.centerarea {
+  max-width: 1000px;
+  margin:0 auto;
+  height: 100%;
+  background: #fff;
+  padding:0 20px 20px;
+}
+
 #booking {
 /*  max-width: 900px;*/
 }
@@ -5,35 +13,21 @@
   border:solid 1px #f00 !important;
 }
 .forminput {
-  font-family: Helvetica,​Arial,​sans-serif;
-  font-size: 14px;
   background-color: #fff;
   background-image: linear-gradient(to top, #eee 0%, #fff 50%);
   border: 1px solid #aaa;
   border-radius: 4px;
-  padding: 5px;
-}
-a.button {
-  display:inline-block;
-  padding:5px 10px;
-  margin-top:10px;
-  margin-right: 10px;
-  color:#fff;
-  font-weight: bold;
-  background: #999;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-  background: #363B48;
-}
-a.button:hover {
-  background: #4f576d;
+  padding: 6px;
 }
 
 input.hours, input.minutes {
   width:50px;
 }
+input.adate {
+  width:88px;
+}
 
-#ended, #compilation {
+#ended {
   display:none;
 }
 #booking .last {
@@ -45,7 +39,7 @@ input.hours, input.minutes {
   display:none;
 }
 @media (max-width: 600px) {
-  #ended, #compilation {
+  #ended {
     display:none !important;
   }
   #booking {
@@ -59,13 +53,12 @@ input.hours, input.minutes {
   }
 }
 
-#booking, #tabs {
-  max-width: 1000px;
-  margin:0 auto;
-}
-
 #ended {
-  width:99%;
+  width:98%;
+  margin:0 auto;
+  padding:20px;
+  background: #fff;
+  position: relative;
 }
 #tabs {
   padding-bottom:10px;
@@ -73,14 +66,11 @@ input.hours, input.minutes {
 #tabs a {
   display: inline-block;
   padding:5px 10px;
-  color:#fff;
   font-weight: bold;
-  background: #999;
   border-radius: 0 0 4px 4px;
 }
 #tabs a:hover,
 #tabs a.active {
-  background: #363B48;
   transition: background-color 0.2s ease;
 }
 @media (max-width: 600px) {
@@ -144,25 +134,18 @@ input.hours, input.minutes {
   display: inline-block;
 }
 .register .adate {
-  width:88px;
   margin-right: 10px;
 }
 .settimepop span {
   padding:0 5px;
 }
 
-#compilation .selectors {
+#ended .selectors {
   margin:10px 0;
 }
-#compilation .selectors > div {
-  margin-bottom:5px;
-}
-#compilation .selectors span {
-  width:80px;
-  display: inline-block;
-}
-#compilation input {
-  width:90px;
+#ended .selectors > div {
+  float:left;
+  margin-right: 10px;
 }
 
 .select2-results .select2-highlighted {
@@ -175,4 +158,12 @@ input.hours, input.minutes {
 
 .ui-jqgrid .ui-jqgrid-view {
   font-size: 13px;
+}
+.ui-widget-content.footrow {
+  background: url("images/ui-bg_glass_40_363B48_1x400.png") repeat-x scroll 50% 50% #363b48;
+  font-size: 16px;
+  color: #fff;
+}
+.ui-widget-content.footrow td[aria-describedby=endedgrid_starttime] {
+  text-align: right;
 }

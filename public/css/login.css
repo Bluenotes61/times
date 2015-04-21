@@ -1,5 +1,27 @@
+.loginbox {
+  max-width:400px;
+  margin:0 auto;
+  padding:20px;
+  border-top:none;
+}
+.loginbox input[type=text],
+.loginbox input[type=password] {
+  width:100%;
+  padding:5px;
+  border-radius: 5px;
+}
+.loginbox form div {
+  margin-top:20px;
+}
+.loginbox h2 {
+  text-align: center;
+}
+.loginbox div.submit {
+  text-align: center;
+}
+
 @media (max-width: 600px) {
-  #content {
+  .loginbox {
     padding:87px 10px 10px 10px;
   }
 }

@@ -10,20 +10,18 @@ $(document).ready(function(){
     activity : "",
     activityid: 0,
     comment : "",
-    starttime : null,
-    pausedElapsed : 0,
-    paused: false
+    starttime : null
   };
 
   /*** Create objects for dropdowns ***/
   var latestDDStart = getDDObject(".start .select2.latest", "Snabbval - Senaste aktiviteter", getLatestActivitiesData);
-  var customersDDStart = getDDObject(".start .select2.customer", "Välj kund", getCustomersData);
-  var projectsDDStart = getDDObject(".start .select2.project", "Välj projekt", getProjectsData);
-  var activitiesDDStart = getDDObject(".start .select2.activity", "Välj aktivitet", getActivitiesData);
+  var customersDDStart = getDDObject(".start .select2.customer", "Välj " + titles.lev1, getCustomersData);
+  var projectsDDStart = getDDObject(".start .select2.project", "Välj " + titles.lev2, getProjectsData);
+  var activitiesDDStart = getDDObject(".start .select2.activity", "Välj " + titles.lev3, getActivitiesData);
   var latestDDRegister = getDDObject(".register .select2.latest", "Snabbval - Senaste aktiviteter", getLatestActivitiesData);
-  var customersDDRegister = getDDObject(".register .select2.customer", "Välj kund", getCustomersData);
-  var projectsDDRegister = getDDObject(".register .select2.project", "Välj projekt", getProjectsData);
-  var activitiesDDRegister = getDDObject(".register .select2.activity", "Välj aktivitet", getActivitiesData);
+  var customersDDRegister = getDDObject(".register .select2.customer", "Välj " + titles.lev1, getCustomersData);
+  var projectsDDRegister = getDDObject(".register .select2.project", "Välj " + titles.lev2, getProjectsData);
+  var activitiesDDRegister = getDDObject(".register .select2.activity", "Välj " + titles.lev1, getActivitiesData);
 
 
   function init() {
@@ -34,32 +32,30 @@ $(document).ready(function(){
 
     assignEvents();
 
-    var now = new Date();
-    var end = new Date(now.getTime() - now.getTimezoneOffset()*60000);
+    var end = new Date();
     var send = end.toISOString().replace(/T/, ' ').replace(/\..+/, '');
-    var start = new Date(now.getTime() - now.getTimezoneOffset()*60000);
+    var start = new Date();
     start.setMonth(start.getMonth() - 1);
     var sstart = start.toISOString().replace(/T/, ' ').replace(/\..+/, '');
 
-    $("#compilation input.from").val(sstart);
-    $("#compilation input.to").val(send);
-    $("#compilation input.from, #compilation input.to").change(function(){
-      $("#compilationgrid").trigger("reloadGrid");
+    $("#ended input.from").val(sstart);
+    $("#ended input.to").val(send);
+    $("#ended input.from, #ended input.to").change(function(){
+      $("#endedgrid").trigger("reloadGrid");
     }).datepicker({dateFormat:'yy-mm-dd'});
-    $("#compilation .curruser").change(function(){
-      if ($(this).val() == "_all_") $("#compilationgrid").showCol("user");
-      else $("#compilationgrid").hideCol("user");
-      $("#compilationgrid").trigger("reloadGrid");
+    $("#ended .curruser").change(function(){
+      if ($(this).val() == "_all_") $("#endedgrid").showCol("user");
+      else $("#endedgrid").hideCol("user");
+      $("#endedgrid").trigger("reloadGrid");
     });
 
     initEndedGrid();
-    initCompilationGrid();
     
     $(window).bind('resize', function() {
-      $("#endedgrid, #compilationgrid").setGridWidth($(window).width() - 20);
+      $("#endedgrid").setGridWidth($("#ended").width());
     });
 
-    getActiveActivity(function(){
+    getActiveActivity().then(function(){
       initActivityCounter();  
     });
 
@@ -128,13 +124,15 @@ $(document).ready(function(){
         var id = $(this).select2("data").id;
         if (id == -1) { // Create new customer
           var name = $(this).select2("data").text;
-          ajaxGet('/createcustomer', {name:name}, function(response) {
-            id = response.id;
-            customersDDStart.refreshData();
-            customersDDStart.select2("data", {id:id, text:name});
-            customersDDRegister.refreshData();
-            projectsDDStart.refreshData(id);
-          });
+          ajax.post('/createcustomer', {name:name}).then(
+            function(response) {
+              id = response.id;
+              customersDDStart.refreshData();
+              customersDDStart.select2("data", {id:id, text:name});
+              customersDDRegister.refreshData();
+              projectsDDStart.refreshData(id);
+            }
+          );
         }
         else {
           projectsDDStart.refreshData(id);
@@ -155,13 +153,15 @@ $(document).ready(function(){
         var id = $(this).select2("data").id;
         if (id == -1) { // Create new customer
           var name = $(this).select2("data").text;
-          ajaxGet('/createcustomer', {name:name}, function(response) {
-            id = response.id;
-            customersDDRegister.refreshData();
-            customersDDRegister.select2("data", {id:id, text:name});
-            customersDDStart.refreshData();
-            projectsDDRegister.refreshData(id);
-          });
+          ajax.post('/createcustomer', {name:name}).then(
+            function(response) {
+              id = response.id;
+              customersDDRegister.refreshData();
+              customersDDRegister.select2("data", {id:id, text:name});
+              customersDDStart.refreshData();
+              projectsDDRegister.refreshData(id);
+            }
+          );
         }
         else {
           projectsDDRegister.refreshData(id);
@@ -181,12 +181,14 @@ $(document).ready(function(){
         if (id == -1) { // Create new project
           var name = $(this).select2("data").text;
           var customerid = customersDDStart.select2("data").id;
-          ajaxGet('/createproject', {customerid:customerid, name:name}, function(response) {
-            id = response.id;
-            projectsDDStart.refreshData(customerid);
-            projectsDDStart.select2("data", {id:id, text:name});
-            activitiesDDStart.refreshData(id);
-          });
+          ajax.post('/createproject', {customerid:customerid, name:name}).then(
+            function(response) {
+              id = response.id;
+              projectsDDStart.refreshData(customerid);
+              projectsDDStart.select2("data", {id:id, text:name});
+              activitiesDDStart.refreshData(id);
+            }
+          );
         }
         else {
           activitiesDDStart.refreshData(id);
@@ -206,12 +208,14 @@ $(document).ready(function(){
         if (id == -1) { // Create new project
           var name = $(this).select2("data").text;
           var customerid = customersDDRegister.select2("data").id;
-          ajaxGet('/createproject', {customerid:customerid, name:name}, function(response) {
-            id = response.id;
-            projectsDDRegister.refreshData(customerid);
-            projectsDDRegister.select2("data", {id:id, text:name});
-            activitiesDDRegister.refreshData(id);
-          });
+          ajax.post('/createproject', {customerid:customerid, name:name}).then(
+            function(response) {
+              id = response.id;
+              projectsDDRegister.refreshData(customerid);
+              projectsDDRegister.select2("data", {id:id, text:name});
+              activitiesDDRegister.refreshData(id);
+            }
+          );
         }
         else {
           activitiesDDRegister.refreshData(id);
@@ -226,11 +230,13 @@ $(document).ready(function(){
         if (id == -1) { // Create new project
           var name = $(this).select2("data").text;
           var projectid = projectsDDStart.select2("data").id;
-          ajaxGet('/createactivity', {projectid:projectid, name:name}, function(response) {
-            id = response.id;
-            activitiesDDStart.refreshData(projectid);
-            activitiesDDStart.select2("data", {id:id, text:name});
-          });
+          ajax.post('/createactivity', {projectid:projectid, name:name}).then(
+            function(response) {
+              id = response.id;
+              activitiesDDStart.refreshData(projectid);
+              activitiesDDStart.select2("data", {id:id, text:name});
+            }
+          );
         }
       }
     });
@@ -242,11 +248,13 @@ $(document).ready(function(){
         if (id == -1) { // Create new project
           var name = $(this).select2("data").text;
           var projectid = projectsDDRegister.select2("data").id;
-          ajaxGet('/createactivity', {projectid:projectid, name:name}, function(response) {
-            id = response.id;
-            activitiesDDRegister.refreshData(projectid);
-            activitiesDDRegister.select2("data", {id:id, text:name});
-          });
+          ajax.post('/createactivity', {projectid:projectid, name:name}).then(
+            function(response) {
+              id = response.id;
+              activitiesDDRegister.refreshData(projectid);
+              activitiesDDRegister.select2("data", {id:id, text:name});
+            }
+          );
         }
       }
     });
@@ -255,47 +263,50 @@ $(document).ready(function(){
 
   /*** Functions for gettiing data for dropdowns */
   function getLatestActivitiesData(dummy, callback){
-    ajaxGet('/getlatestactivities', {}, function(response) {
-      if (response.err) console.log(response.err);
-      var latestData = [];
-      for (var i=0; i < response.data.length; i++) {
-        var val = response.data[i].cid + "|" + response.data[i].pid + "|" + response.data[i].aid;
-        var text = response.data[i].cname + " / " + response.data[i].pname + " / " + response.data[i].aname;
-        latestData.push({id:val, text: text});
+    ajax.post('/getlatestactivities', {}).then(
+      function(rows) {
+        var latestData = [];
+        for (var i=0; i < rows.length; i++) {
+          var val = rows[i].cid + "|" + rows[i].pid + "|" + rows[i].aid;
+          var text = rows[i].cname + " / " + rows[i].pname + " / " + rows[i].aname;
+          latestData.push({id:val, text: text});
+        }
+        callback(latestData);
       }
-      callback(latestData);
-    });
+    );
   }
 
   function getCustomersData(dummy, callback) {
-    ajaxGet('/getcustomers', {}, function(response) {
-      if (response.err) console.log(response.err);
-      var custData = [];
-      for (var i=0; i < response.data.length; i++)
-        custData.push({id:response.data[i].value, text:response.data[i].label});
-      console.log(custData);
-      callback(custData);
-    });
+    ajax.post('/getcustomers', {}).then(
+      function(rows) {
+        var custData = [];
+        for (var i=0; i < rows.length; i++)
+          custData.push({id:rows[i].value, text:rows[i].label});
+        callback(custData);
+      }
+    );
   }
 
   function getProjectsData(customerid, callback) {
-    ajaxGet('/getprojects', {customer: customerid}, function(response) {
-      if (response.err) console.log(response.err);
-      var projectsData = [];
-      for (var i=0; i < response.data.length; i++)
-        projectsData.push({id:response.data[i].value, text:response.data[i].label});
-      callback(projectsData);
-    });
+    ajax.post('/getprojects', {customer: customerid}).then(
+      function(rows) {
+        var projectsData = [];
+        for (var i=0; i < rows.length; i++)
+          projectsData.push({id:rows[i].value, text:rows[i].label});
+        callback(projectsData);
+      }
+    );
   }
 
   function getActivitiesData(projectid, callback) {
-    ajaxGet('/getactivities', {project: projectid}, function(response) {
-      if (response.err) console.log(response.err);
-      var actData = [];
-      for (var i=0; i < response.data.length; i++)
-        actData.push({id:response.data[i].value, text:response.data[i].label});
-      callback(actData);
-    });
+    ajax.post('/getactivities', {project: projectid}).then(
+      function(rows) {
+        var actData = [];
+        for (var i=0; i < rows.length; i++)
+          actData.push({id:rows[i].value, text:rows[i].label});
+        callback(actData);
+      }
+    );
   }
 
 
@@ -317,13 +328,6 @@ $(document).ready(function(){
       $("div.page").hide();
       $("#ended").show();
     });
-    $("#tabs a.compilation").click(function(){
-      $("#compilationgrid").trigger("reloadGrid"); 
-      $("#tabs a").removeClass("active");
-      $(this).addClass("active");
-      $("div.page").hide();
-      $("#compilation").show();
-    });
 
 
     // Delete currently selected customer. Assigned to both customer dropdown delete buttons
@@ -336,15 +340,17 @@ $(document).ready(function(){
         var name = customersDD.select2("data").text;
         if (confirm("Är du säker på att du vill ta bort kunden " + name + " från databasen?")) {
           var id = customersDD.select2("data").id;
-          ajaxGet('/deletecustomer', {customerid: id}, function() {
-            customersDDStart.refreshData();
-            customersDDRegister.refreshData();
-            customersDD.select2("data", null);
-            projectsDD.select2("data", null);
-            activitiesDD.select2("data", null);
-            projectsDD.select2("enable", false);
-            activitiesDD.select2("enable", false);
-          });
+          ajax.post('/deletecustomer', {customerid: id}).then(
+            function() {
+              customersDDStart.refreshData();
+              customersDDRegister.refreshData();
+              customersDD.select2("data", null);
+              projectsDD.select2("data", null);
+              activitiesDD.select2("data", null);
+              projectsDD.select2("enable", false);
+              activitiesDD.select2("enable", false);
+            }
+          );
         }
       }
     });
@@ -359,13 +365,15 @@ $(document).ready(function(){
         var name = projectsDD.select2("data").text;
         if (confirm("Är du säker på att du vill ta bort projektet " + name + " från databasen?")) {
           var id = projectsDD.select2("data").id;
-          ajaxGet('/deleteproject', {projectid: id}, function() {
-            var customerid = customersDD.select2("data").id;
-            projectsDD.refreshData(customerid);
-            projectsDD.select2("data", null);
-            activitiesDD.select2("data", null);
-            activitiesDD.select2("enable", false);
-          });
+          ajax.post('/deleteproject', {projectid: id}).then(
+            function() {
+              var customerid = customersDD.select2("data").id;
+              projectsDD.refreshData(customerid);
+              projectsDD.select2("data", null);
+              activitiesDD.select2("data", null);
+              activitiesDD.select2("enable", false);
+            }
+          );
         }
       }
     });
@@ -379,11 +387,13 @@ $(document).ready(function(){
         var name = activitiesDD.select2("data").text;
         if (confirm("Är du säker på att du vill ta bort aktivitieten " + name + " från databasen?")) {
           var id = activitiesDD.select2("data").id;
-          ajaxGet('/deleteactivity', {activityid: id}, function() {
-            var projectid = projectsDD.select2("data").id;
-            activitiesDD.refreshData(projectid);
-            activitiesDD.select2("data", null);
-          });
+          ajax.post('/deleteactivity', {activityid: id}).then(
+            function() {
+              var projectid = projectsDD.select2("data").id;
+              activitiesDD.refreshData(projectid);
+              activitiesDD.select2("data", null);
+            }
+          );
         }
       }
     });
@@ -415,12 +425,6 @@ $(document).ready(function(){
       stopActivity(stoptime); 
       $(".stopbuttons .stoptime").slideUp();
     });
-    $(".stopbuttons .pause").click(function(){
-      pauseActivity(); 
-    });
-    $(".stopbuttons .restart").click(function(){
-      restartActivity();
-    });
 
     $(".regbuttons .register").click(function(){
       registerActivity();
@@ -436,92 +440,68 @@ $(document).ready(function(){
     if (projectsDDStart.select2("data") == null) {
       return errorOn(projectsDDStart.select2("container"));
     }
-    stopActivity(new Date(), function(){
-      var starttime = new Date();
-      var hours = $("div.start .starttime .hours").val();
-      var mins = $("div.start .starttime .minutes").val();
-      starttime.setHours(hours);
-      starttime.setMinutes(mins);
-      activeActivity.customer = customersDDStart.select2("data").text;
-      activeActivity.project = projectsDDStart.select2("data").text;
-      if (activitiesDDStart.select2("data") == null) {
-        activeActivity.activityid = 0;
-        activeActivity.activity = "";
+    stopActivity(new Date()).then(
+      function(){
+        var starttime = new Date();
+        var hours = $("div.start .starttime .hours").val();
+        var mins = $("div.start .starttime .minutes").val();
+        starttime.setHours(hours);
+        starttime.setMinutes(mins);
+        activeActivity.customer = customersDDStart.select2("data").text;
+        activeActivity.project = projectsDDStart.select2("data").text;
+        if (activitiesDDStart.select2("data") == null) {
+          activeActivity.activityid = 0;
+          activeActivity.activity = "";
+        }
+        else {
+          activeActivity.activityid = activitiesDDStart.select2("data").id;
+          activeActivity.activity = activitiesDDStart.select2("data").text;
+        }
+        activeActivity.comment = $("div.start .comment").val();
+        activeActivity.starttime = starttime;
+        return ajax.post('/startactivity', {
+          projectid: projectsDDStart.select2("data").id,
+          activityid: activeActivity.activityid, 
+          comment: activeActivity.comment, 
+          starttime: starttime
+        });
       }
-      else {
-        activeActivity.activityid = activitiesDDStart.select2("data").id;
-        activeActivity.activity = activitiesDDStart.select2("data").text;
-      }
-      activeActivity.comment = $("div.start .comment").val();
-      activeActivity.starttime = starttime;
-      activeActivity.pausedElapsed = 0;
-      ajaxGet('/startactivity', {
-        projectid: projectsDDStart.select2("data").id,
-        activityid: activeActivity.activityid, 
-        comment: activeActivity.comment, 
-        starttime: starttime
-      }, function(response) {
-        activeActivity.id = response.newid;
+    ).then(
+      function(actid) {
+        activeActivity.id = actid;
         initActivityCounter();
         $(".stopbuttons .stoptime").slideUp();
-      });
-    });
+      }
+    );
   }
 
   /*** Stops the currently active activity ***/
-  function stopActivity(stoptime, callback) {
+  function stopActivity(stoptime) {
+    var d = Q.defer();
     if (activeActivity.id != 0) {
-      ajaxGet('/stopactivity', {id:activeActivity.id, starttime:activeActivity.starttime, stoptime:stoptime, paused:0}, function() {
+      ajax.post('/stopactivity', {id:activeActivity.id, starttime:activeActivity.starttime, stoptime:stoptime}).then(
+        function() {
+          clearInterval(elapsedTimer);
+          $("#endedgrid").trigger("reloadGrid"); 
+          activeActivity.id = 0;
 
-        clearInterval(elapsedTimer);
-        $("#booking .active .stopnuttons .pause").show();
-        $("#booking .active .stopnuttons .restart").hide();
-        $("#endedgrid").trigger("reloadGrid"); 
-        activeActivity.id = 0;
+          latestDDStart.refreshData();
+          latestDDRegister.refreshData();
 
-        latestDDStart.refreshData();
-        latestDDRegister.refreshData();
+          initActivityCounter();
 
-        initActivityCounter();
+          showLastActivity();
 
-        showLastActivity();
-
-        if (callback) callback();
-      });
+          d.resolve();
+        },
+        function(err) {
+          d.reject(err);
+        }
+      );
     }
-    else if (callback) {
-      callback();
-    }
-  }
-
-  /*** Pauses the currently active activity ***/
-  function pauseActivity() {
-    if (activeActivity.id != 0) {
-      var stoptime = new Date();
-      ajaxGet('/stopactivity', {id:activeActivity.id, starttime:activeActivity.starttime, stoptime:stoptime, paused:1}, function(response) {
-        clearInterval(elapsedTimer);
-        $("#booking .active .stopnuttons .pause").hide();
-        $("#booking .active .stopnuttons .restart").show();
-        activeActivity.pausedElapsed += response.elapsed;
-        activeActivity.paused = true;
-        initActivityCounter();
-      });
-    }
-  }
-
-  /*** Restarts a paused activity ***/
-  function restartActivity() {
-    activeActivity.starttime = new Date();
-    ajaxGet('/startactivity', {
-      activityid: activeActivity.activityid, 
-      comment: activeActivity.comment, 
-      starttime: activeActivity.starttime
-    }, function(response) {
-      activeActivity.id = response.newid;
-      activeActivity.paused = false;
-      activeActivity.pausedElapsed = response.elapsed;
-      initActivityCounter();
-    });
+    else
+      d.resolve();
+    return d.promise;
   }
 
   /*** Registers elapsed time for the selected activity ***/
@@ -551,36 +531,38 @@ $(document).ready(function(){
     var projectid = projectsDDRegister.select2("data").id;
     var activityid = (activitiesDDRegister.select2("data") ? activitiesDDRegister.select2("data").id : 0);
     var comment = $(".register .comment").val();
-    ajaxGet('/registeractivity', {
+    ajax.post('/registeractivity', {
       projectid: projectid, 
       activityid: activityid, 
       comment: comment, 
       activitydate: adate,
       hours: hours,
       minutes: minutes
-    }, function(response) {
-      if (!response.err) {
-        $("#endedgrid").trigger("reloadGrid"); 
-        latestDDStart.refreshData();
-        latestDDRegister.refreshData();
-        customersDDRegister.select2("data", null);
-        projectsDDRegister.select2("data", null);
-        activitiesDDRegister.select2("data", null);
-        $(".register .comment").val("");
-        $(".register .adate").val("");
-        $(".register .hours").val("");
-        $(".register .minutes").val("");
-        $(".regbuttons .register").text("Aktivitet registrerad");
-        setTimeout(function(){
-          $(".regbuttons .register").text("Registrera");
-        }, 3000);
-        showLastActivity();
+    }).then(
+      function(response) {
+        if (!response.err) {
+          $("#endedgrid").trigger("reloadGrid"); 
+          latestDDStart.refreshData();
+          latestDDRegister.refreshData();
+          customersDDRegister.select2("data", null);
+          projectsDDRegister.select2("data", null);
+          activitiesDDRegister.select2("data", null);
+          $(".register .comment").val("");
+          $(".register .adate").val("");
+          $(".register .hours").val("");
+          $(".register .minutes").val("");
+          $(".regbuttons .register").text("Aktivitet registrerad");
+          setTimeout(function(){
+            $(".regbuttons .register").text("Registrera");
+          }, 3000);
+          showLastActivity();
+        }
       }
-    });
+    );
   }
 
 
-  /*** Shows the active or paused activity and starts the timer for elapsed time ***/
+  /*** Shows the active activity and starts the timer for elapsed time ***/
   function initActivityCounter() {
     if (activeActivity.id != 0) {
       $("#booking .active").show();
@@ -589,22 +571,12 @@ $(document).ready(function(){
       $("#booking .active .project").text(activeActivity.project);
       $("#booking .active .activity").text(activeActivity.activity);
       $("#booking .active .comment").text(activeActivity.comment);
-      if (activeActivity.paused) { 
-        $("#booking .active .starttime").text("");
-        $("#booking .active .headline").text("Pausad aktivitet");
-        $("#booking .active .stopbuttons .pause").hide();
-        $("#booking .active .stopbuttons .restart").show();
-      }
-      else {
-        var h = String(activeActivity.starttime.getHours());
-        if (h.length < 2) h = "0" + h;
-        var m = String(activeActivity.starttime.getMinutes());
-        if (m.length < 2) m = "0" + m;
-        $("#booking .active .starttime").text(h + ":" + m);
-        $("#booking .active .headline").text("Aktiv aktivitet");
-        $("#booking .active .stopbuttons .pause").show();
-        $("#booking .active .stopbuttons .restart").hide();
-      }
+      var h = String(activeActivity.starttime.getHours());
+      if (h.length < 2) h = "0" + h;
+      var m = String(activeActivity.starttime.getMinutes());
+      if (m.length < 2) m = "0" + m;
+      $("#booking .active .starttime").text(h + ":" + m);
+      $("#booking .active .headline").text("Aktiv aktivitet");
       showElapsed();
       elapsedTimer = setInterval(showElapsed, 30000);
     }
@@ -615,43 +587,48 @@ $(document).ready(function(){
   }
 
   /*** Gets the currently active activity from the database. Called att page load ***/
-  function getActiveActivity(callback) {
-    ajaxGet("/getactiveactivity", {}, function(response) {
-      if (response) {
-        activeActivity.id = response.id;
-        activeActivity.customer = response.customer;
-        activeActivity.project = response.project;
-        activeActivity.activity = response.activity;
-        activeActivity.activityid = response.aid;
-        activeActivity.comment = response.comment;
-        activeActivity.starttime = new Date(response.starttime);
-        activeActivity.pausedElapsed = response.pausedElapsed;
-        activeActivity.paused = response.paused;
+  function getActiveActivity() {
+    var d = Q.defer();
+    ajax.post("/getactiveactivity", {}).then(
+      function(response) {
+        if (response) {
+          activeActivity.id = response.id;
+          activeActivity.customer = response.customer;
+          activeActivity.project = response.project;
+          activeActivity.activity = response.activity;
+          activeActivity.activityid = response.aid;
+          activeActivity.comment = response.comment;
+          activeActivity.starttime = new Date(response.starttime);
+        }
+        else
+          activeActivity.id = 0;
+        d.resolve();
+      },
+      function(err) {
+        d.reject();
       }
-      else
-        activeActivity.id = 0;
-      callback();
-    });
+    );
+    return d.promise;
   }
 
 
   /*** Show last registered activity ***/
   function showLastActivity() {
-    ajaxGet("/getlastactivity", {}, function(response) {
-      $("#booking .last .customer").text(response.customer);
-      $("#booking .last .project").text(response.project);
-      $("#booking .last .activity").text(response.activity);
-      $("#booking .last .comment").text(response.comment);
-      $("#booking .last .starttime").text(response.starttime);
-      $("#booking .last .elapsed").text(formatElapsed(response.elapsedtime));
-    });
+    ajax.post("/getlastactivity", {}).then(
+      function(response) {
+        $("#booking .last .customer").text(response.customer);
+        $("#booking .last .project").text(response.project);
+        $("#booking .last .activity").text(response.activity);
+        $("#booking .last .comment").text(response.comment);
+        $("#booking .last .starttime").text(response.starttime);
+        $("#booking .last .elapsed").text(formatElapsed(response.elapsedtime));
+      }
+    );
   }
 
   /*** Show elapsed time for active activity ***/
   function showElapsed() {
-    var minutes = activeActivity.pausedElapsed;
-    if (!activeActivity.paused) 
-      minutes += Math.floor((new Date() - activeActivity.starttime)/60000);
+    var minutes = Math.floor((new Date() - activeActivity.starttime)/60000);
     while (minutes < 0)
       minutes += 24*60;
     $("#booking .active .elapsed").text(formatElapsed(minutes));
@@ -710,17 +687,6 @@ $(document).ready(function(){
     $(".register .activitydate .adate").val(datestr);
   }
 
-  /*** Perform an ajax request and include the current user guid in the call ***/
-  /*** As node express cannot perform redirects on ajax calls, that is done here if no user is found ***/
-  function ajaxGet(funcname, params, callback) {
-    $("#ajaxloader").show();
-    $.get(funcname, params, function(response) {
-      if (response && response.error == "No user")
-        window.location.href = "/login";
-      callback(response);
-      $("#ajaxloader").hide();
-    });
-  }
 
   
   /*** Functions for ended grid ***/
@@ -731,12 +697,17 @@ $(document).ready(function(){
       url:'/getendedtimes',
       editurl:'/saveedittime',
       postData: {
-        idcol:"_id",
-        cols:"id,cid,pid,aid,customer,project,activity,comment,startdate,starttime,elapsedtime"
+        idcol:"id",
+        cols:"id,username,cid,pid,aid,customer,project,activity,comment,startdate,starttime,elapsedtime",
+        sql: "select * from v_endedtimes",
+        from: function(){ return $("#ended input.from").val(); },
+        to: function(){ return $("#ended input.to").val(); },
+        username: function(){ return $("#ended .curruser").val(); }
       },
-      colNames: ['','', '', '', 'Kund', 'Projekt', 'Aktivitet', 'Beskrivning', 'Datum', 'Starttid', 'Tidsåtgång'],
+      colNames: ['','Användare','', '', '', 'Kund', 'Projekt', 'Aktivitet', 'Beskrivning', 'Datum', 'Starttid', 'Tidsåtgång'],
       colModel:[
         {name:'id', hidden:true, width:0 },
+        {name:'username', hidden:true, width:5 },
         {name:'cid', hidden:true, width:0 },
         {name:'pid', hidden:true, width:0 },
         {name:'aid', hidden:true, width:0 },
@@ -801,9 +772,12 @@ $(document).ready(function(){
       rowNum:20,
       rowList:[10,20,50,100],
       pager: '#endedctrl',
-      sortname: 'id',
+      sortname: 'startdate',
+      sortorder: 'desc',
       height:'100%',
-      width:$(window).width() - 20,
+      width:$("#ended").width(),
+      footerrow: true,
+      userDataOnFooter:true,
       viewrecords: true
     }).navGrid(
       '#endedctrl',
@@ -817,7 +791,11 @@ $(document).ready(function(){
       {},
       {},
       {multipleSearch:true}
-    ).filterToolbar();
+    ).jqGrid('filterToolbar',{
+      stringResult:true,
+      searchOnEnter:false,
+      defaultSearch:'cn'
+    });
   }
 
   /*** Create custom form elements for elapsed time in grid edit ***/
@@ -839,37 +817,43 @@ $(document).ready(function(){
   function fillEditCustomersDropown() {
     var rowid = $("#endedgrid").jqGrid ('getGridParam', 'selrow');
     var currcust = $("#endedgrid").jqGrid("getCell", rowid, "cid");
-    ajaxGet('/getcustomers', {}, function(response) {
-      var sel = $("select#customer").empty();
-      for (var i=0; i < response.data.length; i++) 
-        sel.append("<option value='" + response.data[i].value + "' role='option'>" + response.data[i].label + "</option>");
-      sel.val(currcust);
-      fillEditProjectsDropown(currcust);
-    });
+    ajax.post('/getcustomers', {}).then(
+      function(response) {
+        var sel = $("select#customer").empty();
+        for (var i=0; i < response.data.length; i++) 
+          sel.append("<option value='" + response.data[i].value + "' role='option'>" + response.data[i].label + "</option>");
+        sel.val(currcust);
+        fillEditProjectsDropown(currcust);
+      }
+    );
   }
 
   function fillEditProjectsDropown(currcust, changed) {
     var rowid = $("#endedgrid").jqGrid ('getGridParam', 'selrow');
     var currproj = (changed ? "" : $("#endedgrid").jqGrid("getCell", rowid, "pid"));
-    ajaxGet('/getprojects', {customer:currcust}, function(response) {
-      var sel = $("select#project").empty();
-      for (var i=0; i < response.data.length; i++) 
-        sel.append("<option value='" + response.data[i].value + "' role='option'>" + response.data[i].label + "</option>");
-      sel.val(currproj);
-      if (currproj.length == 0) currproj = "0";
-      fillEditActivitiesDropown(currproj, changed);
-    });
+    ajax.post('/getprojects', {customer:currcust}).then(
+      function(response) {
+        var sel = $("select#project").empty();
+        for (var i=0; i < response.data.length; i++) 
+          sel.append("<option value='" + response.data[i].value + "' role='option'>" + response.data[i].label + "</option>");
+        sel.val(currproj);
+        if (currproj.length == 0) currproj = "0";
+        fillEditActivitiesDropown(currproj, changed);
+      }
+    );
   }
 
   function fillEditActivitiesDropown(currproj, changed) {
     var rowid = $("#endedgrid").jqGrid ('getGridParam', 'selrow');
     var curract = (changed ? "" : $("#endedgrid").jqGrid("getCell", rowid, "aid"));
-    ajaxGet('/getactivities', {project:currproj}, function(response) {
-      var sel = $("select#activity").empty();
-      for (var i=0; i < response.data.length; i++) 
-        sel.append("<option value='" + response.data[i].value + "' role='option'>" + response.data[i].label + "</option>");
-      sel.val(curract);
-    });
+    ajax.post('/getactivities', {project:currproj}).then(
+      function(response) {
+        var sel = $("select#activity").empty();
+        for (var i=0; i < response.data.length; i++) 
+          sel.append("<option value='" + response.data[i].value + "' role='option'>" + response.data[i].label + "</option>");
+        sel.val(curract);
+      }
+    );
   }
 
   /*** Called from the endedgrid. Formats/unformats elapsed time ***/
@@ -884,59 +868,6 @@ $(document).ready(function(){
       return parseInt(vals[0], 10)*60 + parseInt(vals[2], 10);
     else
       return 0;
-  }
-
-
-  /*** Initialize jqgrid showing finished activities ***/
-  function initCompilationGrid() {
-    $("#compilationgrid").jqGrid({
-      url:"/getcompilationtimes",
-      postData: {
-        idcol:"activityid",
-        cols:"customer,project,activity,activityid,user,username,mintime,maxtime,span,elapsedtime"
-      },
-      colNames: ['Kund', 'Projekt', 'Aktivitet', '', 'Användare', '', '', '', 'Tidsspan', 'Tidsåtgång'],
-      colModel:[
-        { name:'customer', width:10, sortable:true },
-        { name:'project', width:10, sortable:true },
-        { name:'activity', width:10, sortable:true },
-        { name:'activityid', hidden:true },
-        { name:'user', width:8, sortable:true, hidden:true },
-        { name:'username', hidden:true },
-        { name:'mintime', hidden:true },
-        { name:'maxtime', hidden:true },
-        { name:'span', width:8, sortable:false },
-        { name:'elapsedtime', width:7, search:false, sortable:true, formatter:formatElapsed }
-      ],
-      datatype: "json",
-      altRows:false,
-      rowNum:10,
-      rowList:[10,20,50,100],
-      pager: '#compilationctrl',
-      sortname: 'customer',
-      footerrow: true,
-      userDataOnFooter:true,
-      height:'100%',
-      width:$(window).width()-20,
-      viewrecords: true,
-      postData:{
-        cols: 'customer,project,activity,user,span,elapsedtime',
-        from: function(){ return $("#compilation input.from").val(); },
-        to: function(){ return $("#compilation input.to").val(); },
-        userguid: function(){ return $("#compilation .curruser").val(); }
-      },
-      subGrid:true,
-      subGridUrl:"/getcompilationdetails",
-      subGridModel: [{ 
-        name : ['Datum', 'Starttid', 'Kommentar', 'Tidsåtgång'],
-        width : [100,80,250,120],
-        params: ["activityid", "username", "mintime", "maxtime"]
-      }],
-    }).navGrid(
-      '#compilationctrl',
-      {edit:false,add:false,del:false},{},{},{},
-      {multipleSearch:true}
-    ).filterToolbar();
   }
 
 

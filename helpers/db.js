@@ -1,35 +1,42 @@
-/*** Database functionality ***/
+/**
+ * Module containtng methods for database communication
+ * @module helpers/db.js
+ */
 
+var Q = require('q');
 var mysql = require('mysql');
-var config = require("../config.js")
+var common = require("./common.js");  
+var config = require("../config.js");  
 
-module.exports.pool = mysql.createPool(config.database);
+var pool = mysql.createPool(config.dbparam);
 
-module.exports.runQuery = function(sql, parameters, callback) {
-  var obj = this;
-  obj.pool.getConnection(function(err, connection) {
+/**
+ * Run a database sql expresion
+ *
+ * @param  {String} sql Parameterized sql expression
+ * @param  {Array} parameters  Array of sql parameters
+ * @return {Promise} Resolves database result. Rejects string containing sql error
+ */
+exports.runQuery = function(sql, parameters, debug) {
+  var d = Q.defer();
+  pool.getConnection(function(err, connection) {
     if (err) {
-      console.log("Connection error: " + err);
-      callback("Connection error: " + err);
+      common.logError(null, "Connection error", err);
+      d.reject("Connection error: " + err);
       return;
     }
     var query = connection.query(sql, parameters, function(sqlerr, response) {
+      if (debug) console.log(query.sql);
       if (sqlerr) {
-        console.log(query.sql);
-        obj.logError("Sql error", sqlerr);
+        common.logError(null, "Sql error", sqlerr.message + " - " + query.sql);
+        d.reject("Sql error: " + sqlerr.message);
+      }
+      else {
+        d.resolve(response);
       }
       connection.release();
-      callback(sqlerr, response);
     });
   });
+  return d.promise;
 }
 
-module.exports.logError = function(subject, err) {
-  this.pool.getConnection(function(err2, connection) {
-    if (err2) return;
-    connection.query("insert into times.debug (debugdate, subject, message) values(NOW(), ?, ?)", [subject, err.message], function(err3, response) {
-      if (err3) console.log(err3);
-      connection.release();
-    });
-  });
-}

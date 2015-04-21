@@ -3,8 +3,10 @@ var router = express.Router();
 
 var loginpage = require("../routes/loginpage.js");
 var mainpage = require("../routes/mainpage.js");
+var gridutils = require("../helpers/gridutils.js");
 
 router.get("/login", loginpage.index);
+router.get("/logout", loginpage.logout);
 router.post("/login", loginpage.post);
 
 router.get("/", mainpage.index);
@@ -12,26 +14,24 @@ router.get("/", mainpage.index);
 
 /*** Mainpage ajax functions ***/
 router.get("/getendedtimes", mainpage.getEndedTimes);
-router.get("/getcompilationtimes", mainpage.getCompilationTimes);
-router.get("/getcompilationdetails", mainpage.getCompilationDetails);
 router.post("/saveedittime", mainpage.saveTime);
 
-router.get("/getcustomers", mainpage.getCustomers);
-router.get("/getprojects", mainpage.getProjects);
-router.get("/getactivities", mainpage.getActivities);
+router.post("/getcustomers", mainpage.getCustomers);
+router.post("/getprojects", mainpage.getProjects);
+router.post("/getactivities", mainpage.getActivities);
 
-router.get("/startactivity", mainpage.startActivity);
-router.get("/stopactivity", mainpage.stopActivity);
-router.get("/registeractivity", mainpage.registerActivity);
-router.get("/getactiveactivity", mainpage.getActiveActivity);
-router.get("/getlatestactivities", mainpage.getLatestActivities);
-router.get("/getlastactivity", mainpage.getLastActivity);
+router.post("/startactivity", mainpage.startActivity);
+router.post("/stopactivity", mainpage.stopActivity);
+router.post("/registeractivity", mainpage.registerActivity);
+router.post("/getactiveactivity", mainpage.getActiveActivity);
+router.post("/getlatestactivities", mainpage.getLatestActivities);
+router.post("/getlastactivity", mainpage.getLastActivity);
 
-router.get("/createcustomer", mainpage.createCustomer);
-router.get("/createproject", mainpage.createProject);
-router.get("/createActivity", mainpage.createActivity);
-router.get("/deletecustomer", mainpage.deleteCustomer);
-router.get("/deleteproject", mainpage.deleteProject);
-router.get("/deleteactivity", mainpage.deleteActivity);
+router.post("/createcustomer", mainpage.createCustomer);
+router.post("/createproject", mainpage.createProject);
+router.post("/createActivity", mainpage.createActivity);
+router.post("/deletecustomer", mainpage.deleteCustomer);
+router.post("/deleteproject", mainpage.deleteProject);
+router.post("/deleteactivity", mainpage.deleteActivity);
 
 module.exports = router;

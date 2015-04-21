@@ -8,132 +8,120 @@
 
 {{#yield-scripts}}
   <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
-
   <script src='/js/jqgrid/js/jquery.jqGrid.min.js'></script>
   <script src='/js/jqgrid/js/i18n/grid.locale-sv.js'></script>
-
   <script src='/js/select2/select2.js'></script>
   <script src='/js/index.js'></script>
+  <script>var titles = {lev1:'{{owner.level1title}}', lev2:'{{owner.level2title}}', lev3:'{{owner.level3title}}'};</script>
 {{/yield-scripts}}
 
-<div id='tabs'>
-  <a class='register active'>Registrera</a>
-  <a class='ended'>Avslutade</a>
-  <a class='compilation'>Sammanfattning</a>
-</div>
+<div class='centerarea'>
+  <div id='tabs'>
+    <a class='register active'>Registrering</a>
+    <a class='ended'>Avslutade</a>
+  </div>
 
-<div id='booking' class='page clearfix'>
-  <div class='active bookform'>
-    <h2 class='headline'>Aktiv aktivitet</h2>
-    <div class='row'><h3>Kund:</h3><span class="customer"></span></div>
-    <div class='row'><h3>Projekt:</h3><span class="project"></span></div>
-    <div class='row'><h3>Aktivitet:</h3><span class="activity"></span></div>
-    <div class='row'><h3>Kommentar:</h3><span class='comment'></span></div>
-    <div class='row'><h3>Starttid:</h3><span class='starttime'></span></div>
-    <div class='row'><h3>Tidsåtgång:</h3><span class='elapsed'></span></div>
-    <div class='stopbuttons'>
-      <a class='pause button'>Pausa</a>
-      <a class='restart button'>Återuppta</a>
-      <a class='open button'>Ange sluttid</a>
-      <div class='stoptime settimepop'>
-        <input type='number' class='hours' min='0' max='23' /><span>:</span><input type='number' class='minutes' min='0' max='59' />
-        <a class='stop button'>Stoppa</a>
+  <div id='booking' class='page clearfix'>
+    <div class='active bookform'>
+      <h2 class='headline'>Aktiv aktivitet</h2>
+      <div class='row'><h3 class='firstcap'>{{owner.level1title}}:</h3><span class="customer"></span></div>
+      <div class='row'><h3 class='firstcap'>{{owner.level2title}}:</h3><span class="project"></span></div>
+      <div class='row'><h3 class='firstcap'>{{owner.level3title}}:</h3><span class="activity"></span></div>
+      <div class='row'><h3>Kommentar:</h3><span class='comment'></span></div>
+      <div class='row'><h3>Starttid:</h3><span class='starttime'></span></div>
+      <div class='row'><h3>Tidsåtgång:</h3><span class='elapsed'></span></div>
+      <div class='stopbuttons'>
+        <a class='open button'>Ange sluttid</a>
+        <div class='stoptime settimepop'>
+          <input type='number' class='hours' min='0' max='23' /><span>:</span><input type='number' class='minutes' min='0' max='59' />
+          <a class='stop button'>Stoppa</a>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class='start bookform'>
-    <h2>Starta aktivitet</h2>
-    <div class='row'>
-      <input type='hidden' class="select2 latest" />
-    </div>
-    <div class='row'>
-      <input type='hidden' class="select2 customer" />
-      <a class='delcustomer'>X</a>
-    </div>
-    <div class='row'>
-      <input type='hidden' class="select2 project" />
-      <a class='delproject'>X</a>
-    </div>
-    <div class='row'>
-      <input type='hidden' class="select2 activity" />
-      <a class='delactivity'>X</a>
-    </div>
-    <div class='row'>
-      <textarea class='comment forminput' placeholder="Ange en kommentar"></textarea>
-    </div>
-    <div class='startbuttons'>
-      <a class='open button'>Ange starttid</a>
-      <div class='starttime settimepop'>
-        <input type='number' class='hours' min='0' max='23' /><span>:</span><input type='number' class='minutes' min='0' max='59' />
-        <a class='start button'>Starta</a>
+    <div class='start bookform'>
+      <h2>Starta aktivitet</h2>
+      <div class='row'>
+        <input type='hidden' class="select2 latest" />
+      </div>
+      <div class='row'>
+        <input type='hidden' class="select2 customer" />
+        <a class='delcustomer delete' title='Ta bort'>X</a>
+      </div>
+      <div class='row'>
+        <input type='hidden' class="select2 project" />
+        <a class='delproject delete' title='Ta bort'>X</a>
+      </div>
+      <div class='row'>
+        <input type='hidden' class="select2 activity" />
+        <a class='delactivity delete' title='Ta bort'>X</a>
+      </div>
+      <div class='row'>
+        <textarea class='comment forminput' placeholder="Ange en kommentar"></textarea>
+      </div>
+      <div class='startbuttons'>
+        <a class='open button'>Ange starttid</a>
+        <div class='starttime settimepop'>
+          <input type='number' class='hours forminput' min='0' max='23' /><span>:</span><input type='number' class='minutes forminput' min='0' max='59' />
+          <a class='start button'>Starta</a>
+        </div>
       </div>
     </div>
+
+    <div class='divider'></div>
+
+    <div class='register bookform'>
+      <h2>Registrera aktivitet</h2>
+      <div class='row'>
+        <input type='hidden' class="select2 latest" />
+      </div>
+      <div class='row'>
+        <input type='hidden' class="select2 customer" />
+        <a class='delcustomer'>X</a>
+      </div>
+      <div class='row'>
+        <input type='hidden' class="select2 project" />
+        <a class='delproject'>X</a>
+      </div>
+      <div class='row'>
+        <input type='hidden' class="select2 activity" />
+        <a class='delactivity'>X</a>
+      </div>
+      <div class='row'>
+        <textarea class='comment forminput' placeholder="Ange en kommentar"></textarea>
+      </div>
+      <div class='row activitydate'>
+        <input type='text' placeholder="Ange datum" class='adate forminput' />
+        <div class='elapsed'><input type='number' class='hours forminput' min='0' max='23' /> tim <input type='number' class='minutes forminput' min='0' max='59' /> min</div>
+      </div>
+      <div class='regbuttons'>
+        <a class='register button'>Registrera</a>
+      </div>
+    </div>
+
+    <div class='divider'></div>
+
+    <div class='last bookform'>
+      <h2 class='headline'>Senast registrerad</h2>
+      <div class='row'><h3 class='firstcap'>{{owner.level1title}}:</h3><span class="customer"></span></div>
+      <div class='row'><h3 class='firstcap'>{{owner.level2title}}:</h3><span class="project"></span></div>
+      <div class='row'><h3 class='firstcap'>{{owner.level3title}}:</h3><span class="activity"></span></div>
+      <div class='row'><h3>Kommentar:</h3><span class='comment'></span></div>
+      <div class='row'><h3>Starttid:</h3><span class='starttime'></span></div>
+      <div class='row'><h3>Tidsåtgång:</h3><span class='elapsed'></span></div>
+    </div>
+
   </div>
-
-  <div class='divider'></div>
-
-  <div class='register bookform'>
-    <h2>Registrera aktivitet</h2>
-    <div class='row'>
-      <input type='hidden' class="select2 latest" />
-    </div>
-    <div class='row'>
-      <input type='hidden' class="select2 customer" />
-      <a class='delcustomer'>X</a>
-    </div>
-    <div class='row'>
-      <input type='hidden' class="select2 project" />
-      <a class='delproject'>X</a>
-    </div>
-    <div class='row'>
-      <input type='hidden' class="select2 activity" />
-      <a class='delactivity'>X</a>
-    </div>
-    <div class='row'>
-      <textarea class='comment forminput' placeholder="Ange en kommentar"></textarea>
-    </div>
-    <div class='row activitydate'>
-      <input type='text' placeholder="Ange datum" class='adate forminput' />
-      <div class='elapsed'><input type='number' class='hours forminput' min='0' max='23' /> tim <input type='number' class='minutes forminput' min='0' max='59' /> min</div>
-    </div>
-    <div class='regbuttons'>
-      <a class='register button'>Registrera</a>
-    </div>
-  </div>
-
-  <div class='divider'></div>
-
-  <div class='last bookform'>
-    <h2 class='headline'>Senast registrerad</h2>
-    <div class='row'><h3>Kund:</h3><span class="customer"></span></div>
-    <div class='row'><h3>Projekt:</h3><span class="project"></span></div>
-    <div class='row'><h3>Aktivitet:</h3><span class="activity"></span></div>
-    <div class='row'><h3>Kommentar:</h3><span class='comment'></span></div>
-    <div class='row'><h3>Starttid:</h3><span class='starttime'></span></div>
-    <div class='row'><h3>Tidsåtgång:</h3><span class='elapsed'></span></div>
-  </div>
-
 </div>
 
 <div id='ended' class='page'>
-  <h2>Avslutade aktiviteter</h2>
+  <div class='selectors clearfix'>
+    {{#isadmin}}
+      <div><h3>Användare:</h3><select class='curruser forminput'>{{{useroptions}}}</select></div>
+    {{/isadmin}}
+    <div><h3>Från:</h3><input type='text' class='forminput adate from' placeholder='Från' /></div>
+    <div><h3>Till:</h3><input type='text' class='forminput adate to' placeholder='Till' /></div>
+  </div>
   <table id="endedgrid"></table>
   <div id="endedctrl"></div>
-</div>
-
-<div id='compilation' class='page'>
-  <h2>Sammanfattning</h2>
-  <div class='selectors'>
-    {{#isadmin}}
-      <div><span>Användare:</span><select class='curruser forminput'>{{{useroptions}}}</select></div>
-    {{/isadmin}}
-    {{^isadmin}}
-      <input type='hidden' class='curruser' value='{{userguid}}' />
-    {{/isadmin}}
-    <div><span>Från:</span><input type='text' class='forminput from' placeholder='Från' /></div>
-    <div><span>Till:</span><input type='text' class='forminput to' placeholder='Till' /></div>
-  </div>
-  <table id="compilationgrid"></table>
-  <div id="compilationctrl"></div>
 </div>

@@ -2,8 +2,10 @@ html, body {
   padding: 0;
   margin:0;
 }
-body {
-  font: 14px Helvetica, Arial, sans-serif;
+body, input, textarea {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 120%;
 }
 
 * {
@@ -12,10 +14,10 @@ body {
   box-sizing: border-box;
 }
 
-h1 { color: #000; font-size: 180%; font-weight: normal; line-height: 1.2em; margin: 1px 0 1px 0; }
-h2 { color: #000; font-size: 150%; font-weight: normal; line-height: 1.2em; margin: 1px 0 1px 0; }
-h3 { color: #000; font-size: 110%; font-weight: normal; line-height: 1.0em; margin: 1px 0 1px 0; }
-h4 { color: #000; font-size: 110%; font-weight: normal; line-height: 1.0em; margin: 1px 0 1px 0; }
+h1 { color: #000; font-size: 180%; font-weight: normal; line-height: 120%; margin: 0; }
+h2 { color: #000; font-size: 150%; font-weight: normal; line-height: 120%; margin: 0; }
+h3 { color: #000; font-size: 110%; font-weight: bold; line-height: 120%; margin: 0; }
+h4 { color: #000; font-size: 110%; font-weight: normal; line-height: 120%; margin: 0; }
 
 p { margin-top: 8px; margin-bottom: 0px; }
 a { cursor:pointer; color: #000; text-decoration: none; outline: none; }
@@ -26,6 +28,38 @@ img { border:0; }
   content: "";
   display: table;
   clear: both;
+}
+.firstcap:first-letter {
+  text-transform: uppercase;
+}
+
+#dimmer {
+  background: none repeat scroll 0 0 #000000;
+  display: none;
+  height: 100%;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 5;
+  opacity:0.6;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
+}
+#ajaxerr {
+  max-width:800px;
+  width:80%;
+  position: absolute;
+  display: none;
+  top:10%;
+  left:0;
+  right:0;
+  margin:0 auto;
+  padding:20px;
+  font-weight: bold;
+  background: #fff;
+  z-index: 100;
+  border-radius: 10px;
+  border: solid 4px #363B48;  
 }
 
 #ajaxloader {
@@ -39,21 +73,20 @@ img { border:0; }
 }
 
 #topbar {
-  background:#363B48;
-  padding:10px;
-  color:#fff;
+  padding:10px 20px;
+}
+#topbar * {
+  vertical-align: middle;
 }
 #topbar .left {
   float: left;
 }
-#topbar .left h1,
-#topbar .left img {
-  vertical-align: middle;
-  color:#fff;
-  display: inline-block;
+#topbar img {
+  max-height:40px;
+  margin-right: 20px;
 }
-#topbar .left img {
-  margin-right: 10px;
+#topbar .left h1 {
+  display: inline;
 }
 #topbar .userinfo {
   float:right;
@@ -61,14 +94,23 @@ img { border:0; }
 }
 #topbar .userinfo a {
   margin-left: 10px;
-  color:#ccc;
 }
 #topbar .userinfo a:hover {
   color:#fff;
 }
-#content {
-  padding: 0 10px;
+
+.button {
+  display:inline-block;
+  padding:5px 20px;
+  margin-top:10px;
+  margin-right: 10px;
+  font-weight: bold;
+  border:none;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  cursor:pointer;
 }
+
 
 @media (max-width: 600px) {
   #topbar {

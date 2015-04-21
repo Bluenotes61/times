@@ -1,6 +1,10 @@
 {
   "name": "040times",
-  "version": "0.0.1",
+  "version": "2.0.0",
+  "author": {
+    "name": "Magnus Ehlde, 040 Internet AB",
+    "email": "magnus@040.se"
+  },
   "private": true,
   "scripts": {
     "start": "nodemon app.js"
@@ -19,7 +23,8 @@
     "dateformat":"*",
     "mysql": "*",
     "date-format-lite": "*",
-    "cookie-parser":"*"
+    "cookie-parser":"*",
+    "q": "*"
   },
   "devDependencies": {
     "nodemon": "*"

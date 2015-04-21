@@ -2,9 +2,11 @@
   <link rel='stylesheet' href='/css/login.css' />
 {{/yield-styles}}
 
-<h2>Inloggning</h2>
-<form method='post' action='login'>
-  <p><input id='username' name='username' type='text' placeholder='Användarnamn' value='{{username}}'/></p>
-  <p><input id='password' name='password' type='password' placeholder='Lösenord' /></p>
-  <p><input type='submit' value='Logga in' /></p>
-</form>
+<div class='loginbox'>
+  <h2>Inloggning</h2>
+  <form method='post' action='login'>
+    <div><input id='username' name='username' type='text' placeholder='Användarnamn' value='{{username}}'/></div>
+    <div><input id='password' name='password' type='password' placeholder='Lösenord' /></div>
+    <div class='submit'><input type='submit' class='button' value='Logga in' /></div>
+  </form>
+</div>

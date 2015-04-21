@@ -405,7 +405,7 @@ exports.getActiveActivity = function(req, res) {
       "order by rt.id desc";
     db.runQuery(sql, [user.username], function(err, rows) {
       if (rows.length >  0) {
-        rows[0].starttime = new Date(rows[0].starttime.getTime() + rows[0].starttime.getTimezoneOffset()*60*1000);
+        //rows[0].starttime = new Date(rows[0].starttime.getTime() + rows[0].starttime.getTimezoneOffset()*60*1000);
         rows[0].pausedElapsed = 0;
         getPausedElapsed(user.username, rows[0].aid, rows[0].id, function(elapsed){
           rows[0].pausedElapsed = elapsed;

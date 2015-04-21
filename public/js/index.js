@@ -34,10 +34,9 @@ $(document).ready(function(){
 
     assignEvents();
 
-    var now = new Date();
-    var end = new Date(now.getTime() - now.getTimezoneOffset()*60000);
+    var end = new Date();
     var send = end.toISOString().replace(/T/, ' ').replace(/\..+/, '');
-    var start = new Date(now.getTime() - now.getTimezoneOffset()*60000);
+    var start = new Date();
     start.setMonth(start.getMonth() - 1);
     var sstart = start.toISOString().replace(/T/, ' ').replace(/\..+/, '');
 

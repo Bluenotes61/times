@@ -15,7 +15,7 @@ exports.index = function(req, res) {
           for (var i=0; i < rows.length; i++) {
             useroptions += "<option value='" + rows[i].username + "' " + (rows[i].username == user.username ? "selected" : "") + ">" + rows[i].name + "</option>";
           }
-          res.render("index", {
+          res.render("main", {
             owner:user.owner,
             user:user,
             useroptions:useroptions
@@ -38,11 +38,11 @@ exports.index = function(req, res) {
 exports.getEndedTimes = function(req, res) {
   common.getUser(req, res).then(
     function(user){
-      var userwhere = "username='" + user.username + "'";
-      if (!user.username || user.username.length == 0)
-        userwhere = "username='" + user.username + "'";
-      else if (req.query.username == "_all_")
+      var userwhere;
+      if (req.query.username == "_all_")
         userwhere = "1=1";
+      else
+        userwhere = "username='" + req.query.username + "'";
       var params = {
         idcol:req.query.idcol,
         cols:req.query.cols,
@@ -126,6 +126,69 @@ function getActivityToSave(req, res) {
   return d.promise;
 }
  
+exports.getUsers = function(req, res) {
+  common.getUser(req, res).then(function(user){
+    var params = {
+      idcol:req.query.idcol,
+      cols:req.query.cols,
+      sql:"select * from users where ownerid=" + user.owner.id,
+      filters:req.query.filters,
+      sidx:req.query.sidx,
+      sord:req.query.sord,
+      page:req.query.page,
+      rows:req.query.rows
+    };
+    return gridutils.getGridData(params);
+  }).then(
+    function(data){
+      res.json(data);
+    },
+    function(err) {
+      common.logMessage("Error in getUsers", err);
+      res.end(err);
+    }
+  )
+}
+
+exports.editUser = function(req, res) {
+  common.getUser(req, res).then(function(user){
+    if (req.body.oper == "del") {
+      db.runQuery("delete from users where id=?", [req.body.id]).then(
+        function() {res.send("");},
+        function(err) {res.send(err);}
+      );
+    }
+    else if (req.body.oper == "add") {
+      var isadmin = (req.body.isadmin == "Ja" ? "1" : "0");
+      var isactive = (req.body.isactive == "Ja" ? "1" : "0");
+      db.runQuery("insert into users (username, password, ownerid, name, isadmin, isactive) values(?, ?, ?, ?, ?, ?)", [req.body.username, req.body.password, user.owner.id, req.body.name, isadmin, isactive]).then(
+        function() {res.send("");},
+        function(err) {
+          if (err.indexOf("owneruser") >= 0)
+            res.send("Användaren finns redan")
+          else if (err.indexOf("userpassword") >= 0)
+            res.send("Ange ett annat lösenord")
+          else
+            res.send(err);
+        }
+      );
+    }
+    else if (req.body.oper == "edit") {
+      db.runQuery("update users set password=?, name=?, isadmin=?, isactive=? where id=?", [req.body.password, req.body.name, isadmin, isactive, req.body.id]).then(
+        function() { res.send(""); },
+        function(err) {
+          console.log(err);
+          if (err.indexOf("userpassword") >= 0)
+            res.send("Ange ett annat lösenord")
+          else
+            res.send(err);
+        }
+      );
+    }
+    else
+      res.send("Ett fel uppstod");
+  });
+}
 
 /*** Get the 10 latest activities ***/
 exports.getLatestActivities = function(req, res) {
@@ -388,7 +451,7 @@ exports.registerActivity = function(req, res) {
         );
       }
       else {
-        doRegisterActivity(user.username, activityid, comment, adate, elapsed).then(
+        doRegisterActivity(user, activityid, comment, adate, elapsed).then(
           function(){
             res.json({err:null});
           },
@@ -406,14 +469,14 @@ exports.registerActivity = function(req, res) {
 
 
 /*** Add activity by adding a rawtimes post ***/
-function doRegisterActivity(username, activityid, comment, startdate, elapsed) {
+function doRegisterActivity(user, activityid, comment, startdate, elapsed) {
   var d = Q.defer();
   var sql = "insert into rawtimes " + 
-    "(username, activityid, comment, starttime, elapsedtime) " +
-    "values (?, ?, ?, ?, ?)"; 
-  db.runQuery(sql, [username, activityid, comment, startdate, elapsed]).then(
+    "(ownerid, username, activityid, comment, starttime, elapsedtime) " +
+    "values (?, ?, ?, ?, ?, ?)"; 
+  db.runQuery(sql, [user.owner.id, user.username, activityid, comment, startdate, elapsed]).then(
     function(result) { 
-      d.resolve(null);
+      d.resolve();
     },
     function(err) {
       d.reject(err);
@@ -480,7 +543,7 @@ exports.createCustomer = function(req, res) {
         );
       }
       else {
-        db.runQuery("insert into customers (ownerid, name, deleted) values(?, 0)", [user.owner.id, aname]).then(
+        db.runQuery("insert into customers (ownerid, name, deleted) values(?, ?, 0)", [user.owner.id, aname]).then(
           function(response) {
             res.json({id:response.insertId});
           },

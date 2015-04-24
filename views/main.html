@@ -3,7 +3,7 @@
   <link rel='stylesheet' href='/css/jquery-ui.min.css' />
   <link rel='stylesheet' href='/js/jqgrid/css/ui.jqgrid.css' />
   <link rel='stylesheet' href='/js/select2/select2.css' />
-  <link rel='stylesheet' href='/css/index.css' />
+  <link rel='stylesheet' href='/css/main.css' />
 {{/yield-styles}}
 
 {{#yield-scripts}}
@@ -11,14 +11,15 @@
   <script src='/js/jqgrid/js/jquery.jqGrid.min.js'></script>
   <script src='/js/jqgrid/js/i18n/grid.locale-sv.js'></script>
   <script src='/js/select2/select2.js'></script>
-  <script src='/js/index.js'></script>
-  <script>var titles = {lev1:'{{owner.level1title}}', lev2:'{{owner.level2title}}', lev3:'{{owner.level3title}}'};</script>
+  <script src='/js/main.js'></script>
+  <script>var titles = {lev1:'{{owner.level1title}}', lev2:'{{owner.level2title}}', lev3:'{{owner.level3title}}'};var ownerid={{owner.id}};</script>
 {{/yield-scripts}}
 
 <div class='centerarea'>
   <div id='tabs'>
     <a class='register active'>Registrering</a>
     <a class='ended'>Avslutade</a>
+    {{#user.isadmin}}<a class='users'>Användare</a>{{/user.isadmin}}
   </div>
 
   <div id='booking' class='page clearfix'>
@@ -92,7 +93,7 @@
       </div>
       <div class='row activitydate'>
         <input type='text' placeholder="Ange datum" class='adate forminput' />
-        <div class='elapsed'><input type='number' class='hours forminput' min='0' max='23' /> tim <input type='number' class='minutes forminput' min='0' max='59' /> min</div>
+        <div class='elapsed'><input type='number' class='hours forminput' min='0' max='23' /><span class='desktop'>tim</span><span class='mobile'>t</span> <input type='number' class='minutes forminput' min='0' max='59' /><span class='desktop'>min</span><span class='mobile'>m</span></div>
       </div>
       <div class='regbuttons'>
         <a class='register button'>Registrera</a>
@@ -116,12 +117,19 @@
 
 <div id='ended' class='page'>
   <div class='selectors clearfix'>
-    {{#isadmin}}
+    {{#user.isadmin}}
       <div><h3>Användare:</h3><select class='curruser forminput'>{{{useroptions}}}</select></div>
-    {{/isadmin}}
+    {{/user.isadmin}}
     <div><h3>Från:</h3><input type='text' class='forminput adate from' placeholder='Från' /></div>
     <div><h3>Till:</h3><input type='text' class='forminput adate to' placeholder='Till' /></div>
   </div>
   <table id="endedgrid"></table>
   <div id="endedctrl"></div>
 </div>
+
+{{#user.isadmin}}
+  <div id="users" class='page'>
+    <table id="usersgrid"></table>
+    <div id="usersctrl"></div>
+  </div>
+{{/user.isadmin}}

@@ -32,24 +32,22 @@ $(document).ready(function(){
 
     assignEvents();
 
-    var end = new Date();
-    var send = end.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+    var now = new Date();
     var start = new Date();
     start.setMonth(start.getMonth() - 1);
-    var sstart = start.toISOString().replace(/T/, ' ').replace(/\..+/, '');
 
-    $("#ended input.from").val(sstart);
-    $("#ended input.to").val(send);
+    $("#ended input.from").val(formatDate(start));
+    $("#ended input.to").val(formatDate(now));
     $("#ended input.from, #ended input.to").change(function(){
       $("#endedgrid").trigger("reloadGrid");
     }).datepicker({dateFormat:'yy-mm-dd'});
     $("#ended .curruser").change(function(){
-      if ($(this).val() == "_all_") $("#endedgrid").showCol("user");
-      else $("#endedgrid").hideCol("user");
+      if ($(this).val() == "_all_") $("#endedgrid").showCol("username");
+      else $("#endedgrid").hideCol("username");
       $("#endedgrid").trigger("reloadGrid");
     });
 
-    initEndedGrid();
+    initGrids();
     
     $(window).bind('resize', function() {
       $("#endedgrid").setGridWidth($("#ended").width());
@@ -61,7 +59,7 @@ $(document).ready(function(){
 
     showLastActivity();
     
-    setToday();
+    $(".register .activitydate .adate").val(formatDate(new Date()));
   }
 
   function setupSelectBoxes() {
@@ -315,7 +313,7 @@ $(document).ready(function(){
 
     // Tab clicks
     $("#tabs a.active").click(function(){
-      setToday();
+      $(".register .activitydate .adate").val(formatDate(new Date()));
       $("#tabs a").removeClass("active");
       $(this).addClass("active");
       $("div.page").hide();
@@ -327,6 +325,12 @@ $(document).ready(function(){
       $(this).addClass("active");
       $("div.page").hide();
       $("#ended").show();
+    });
+    $("#tabs a.users").click(function(){
+      $("#tabs a").removeClass("active");
+      $(this).addClass("active");
+      $("div.page").hide();
+      $("#users").show();
     });
 
 
@@ -401,8 +405,8 @@ $(document).ready(function(){
     // Start and stop buttons
     $(".startbuttons .open").click(function(){
       var now = new Date();
-      $(".startbuttons .starttime .hours").val(now.getHours());
-      $(".startbuttons .starttime .minutes").val(now.getMinutes());
+      $(".startbuttons .starttime .hours").val(formatNumber(now.getHours()));
+      $(".startbuttons .starttime .minutes").val(formatNumber(now.getMinutes()));
       $(".startbuttons .starttime").slideToggle();
     });
     $(".startbuttons .starttime .start").click(function(){
@@ -412,8 +416,8 @@ $(document).ready(function(){
 
     $(".stopbuttons .open").click(function(){
       var now = new Date();
-      $(".stopbuttons .stoptime .hours").val(now.getHours());
-      $(".stopbuttons .stoptime .minutes").val(now.getMinutes());
+      $(".stopbuttons .stoptime .hours").val(formatNumber(now.getHours()));
+      $(".stopbuttons .stoptime .minutes").val(formatNumber(now.getMinutes()));
       $(".stopbuttons .stoptime").slideToggle();
     });
     $(".stopbuttons .stoptime .stop").click(function(){
@@ -548,7 +552,7 @@ $(document).ready(function(){
           projectsDDRegister.select2("data", null);
           activitiesDDRegister.select2("data", null);
           $(".register .comment").val("");
-          $(".register .adate").val("");
+//          $(".register .adate").val(formatDate(new Date()));
           $(".register .hours").val("");
           $(".register .minutes").val("");
           $(".regbuttons .register").text("Aktivitet registrerad");
@@ -571,11 +575,7 @@ $(document).ready(function(){
       $("#booking .active .project").text(activeActivity.project);
       $("#booking .active .activity").text(activeActivity.activity);
       $("#booking .active .comment").text(activeActivity.comment);
-      var h = String(activeActivity.starttime.getHours());
-      if (h.length < 2) h = "0" + h;
-      var m = String(activeActivity.starttime.getMinutes());
-      if (m.length < 2) m = "0" + m;
-      $("#booking .active .starttime").text(h + ":" + m);
+      $("#booking .active .starttime").text(formatTime(activeActivity.starttime));
       $("#booking .active .headline").text("Aktiv aktivitet");
       showElapsed();
       elapsedTimer = setInterval(showElapsed, 30000);
@@ -654,6 +654,7 @@ $(document).ready(function(){
     };
     dd.select2({
       placeholder:placeholder,
+      formatNoMatches:"Inga träffar",
       createSearchChoice: function(term) { 
         return { id: -1, text:term }
       },
@@ -677,22 +678,29 @@ $(document).ready(function(){
     return false;
   }
 
-  function setToday() {
-    function addZero(val) {
-      if (String(val).length < 2) return "0" + val;
-      else return val;
-    }
-    var now = new Date();
-    var datestr = now.getFullYear() + "-" + addZero(now.getMonth()+1) + "-" + addZero(now.getDate());
-    $(".register .activitydate .adate").val(datestr);
+  function formatDate(date) {
+    var y = date.getFullYear().toString();
+    var m = (date.getMonth() + 1).toString();
+    var d  = date.getDate().toString();
+    return y + "-" + (m[1] ? m : "0" + m[0]) + "-" + (d[1] ? d : "0" + d[0]);
   }
 
-
+  function formatTime(date) {
+    var h = date.getHours().toString();
+    var m = date.getMinutes().toString();
+    return (h[1] ? h : "0" + h[0]) + ":" + (m[1] ? m : "0" + m[0]);
+  }
   
+  function formatNumber(number) {
+    var n = number.toString();
+    return (n[1] ? n : "0" + n[0]);
+  }
+
   /*** Functions for ended grid ***/
 
-  /*** Initialize jqgrid showing finished activities ***/
-  function initEndedGrid() {
+  /*** Initialize jqgrid showing finished activities and users ***/
+  function initGrids() {
+    
     $("#endedgrid").jqGrid({
       url:'/getendedtimes',
       editurl:'/saveedittime',
@@ -700,9 +708,18 @@ $(document).ready(function(){
         idcol:"id",
         cols:"id,username,cid,pid,aid,customer,project,activity,comment,startdate,starttime,elapsedtime",
         sql: "select * from v_endedtimes",
-        from: function(){ return $("#ended input.from").val(); },
-        to: function(){ return $("#ended input.to").val(); },
-        username: function(){ return $("#ended .curruser").val(); }
+        from: function(){ 
+          return $("#ended input.from").val(); 
+        },
+        to: function(){
+          var to = new Date($("#ended input.to").val());
+          to.setHours(23);
+          to.setMinutes(59);
+          return formatDate(to);
+        },
+        username: function(){ 
+          return $("#ended .curruser").val(); 
+        }
       },
       colNames: ['','Användare','', '', '', 'Kund', 'Projekt', 'Aktivitet', 'Beskrivning', 'Datum', 'Starttid', 'Tidsåtgång'],
       colModel:[
@@ -770,7 +787,7 @@ $(document).ready(function(){
       datatype: "json",
       altRows:false,
       rowNum:20,
-      rowList:[10,20,50,100],
+      rowList:[10,20,50,100,500,1000],
       pager: '#endedctrl',
       sortname: 'startdate',
       sortorder: 'desc',
@@ -789,6 +806,70 @@ $(document).ready(function(){
         width:"auto"
       },
       {},
+      {},
+      {multipleSearch:true}
+    ).jqGrid('filterToolbar',{
+      stringResult:true,
+      searchOnEnter:false,
+      defaultSearch:'cn'
+    });
+
+
+    $("#usersgrid").jqGrid({
+      url:'/getusers',
+      editurl:'/edituser',
+      postData: {
+        idcol:"id",
+        cols:"id,username,password,name,isadmin,isactive"
+      },
+      colNames: ['','Användarnamn','Lösenord', 'Namn', 'Administratör', 'Aktiv'],
+      colModel:[
+        {name:'id', hidden:true, width:0 },
+        {name:'username', width:10, editable:true, editoptions:{readonly:'readonly'}, editrules:{required:true}},
+        {name:'password', width:10, editable:true, editrules:{required:true}},
+        {name:'name', width:30 , editable:true },
+        {name:'isadmin', width:10, search:false, editable:true, edittype:"checkbox", formatter:function(v){return(v=="1"?"Ja":"Nej");}, editoptions:{value:"Ja:Nej"}},
+        {name:'isactive', width:10, search:false, editable:true, edittype:"checkbox", formatter:function(v){return(v=="1"?"Ja":"Nej");}, editoptions:{value:"Ja:Nej"}}
+      ],
+      datatype: "json",
+      altRows:false,
+      rowNum:20,
+      rowList:[10,20,50],
+      pager: '#usersctrl',
+      sortname: 'username',
+      sortorder: 'asc',
+      height:'100%',
+      width:$("#users").width(),
+      viewrecords: true
+    }).navGrid(
+      '#usersctrl',
+      {edit:true,add:true,del:true},
+      {
+        beforeShowForm:function(frm){
+          $(frm).find("#username").removeAttr("readonly");
+        },
+        afterSubmit:function(response, postdata){
+          if (response.responseText.length > 0) {
+            return [false, response.responseText, 0];
+          }
+          else {
+            return [true, "", postdata.id];
+          }
+        }
+      },
+      { 
+        beforeShowForm:function(frm){
+          $(frm).find("#username").removeAttr("readonly");
+        },
+        afterSubmit:function(response, postdata){
+          if (response.responseText.length > 0) {
+            return [false, response.responseText, 0];
+          }
+          else {
+            return [true, "", postdata.new_id];
+          }
+        }
+      },
       {},
       {multipleSearch:true}
     ).jqGrid('filterToolbar',{

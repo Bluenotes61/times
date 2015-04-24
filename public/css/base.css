@@ -113,12 +113,6 @@ img { border:0; }
 
 
 @media (max-width: 600px) {
-  #topbar {
-    position:fixed;
-    width:100%;
-    z-index:1000;
-    padding:10px;
-  }
   #topbar .left {
     float: none;
     text-align: center;

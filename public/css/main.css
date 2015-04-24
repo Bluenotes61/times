@@ -3,11 +3,11 @@
   margin:0 auto;
   height: 100%;
   background: #fff;
-  padding:0 20px 20px;
+  padding:0 20px;
 }
 
 #booking {
-/*  max-width: 900px;*/
+  padding-bottom: 20px;
 }
 .error {
   border:solid 1px #f00 !important;
@@ -27,7 +27,7 @@ input.adate {
   width:88px;
 }
 
-#ended {
+#ended, #users {
   display:none;
 }
 #booking .last {
@@ -38,7 +38,11 @@ input.adate {
   background: #363B48;
   display:none;
 }
+.desktop {display:inline;}
+.mobile {display:none;}
 @media (max-width: 600px) {
+  .desktop {display:none;}
+  .mobile {display:inline;}
   #ended {
     display:none !important;
   }
@@ -56,7 +60,15 @@ input.adate {
 #ended {
   width:98%;
   margin:0 auto;
-  padding:20px;
+  padding:0 20px 20px 20px;
+  background: #fff;
+  position: relative;
+}
+#users {
+  width:100%;
+  max-width: 1000px;
+  margin:0 auto;
+  padding:0 20px 20px 20px;
   background: #fff;
   position: relative;
 }
@@ -107,18 +119,19 @@ input.adate {
 }
 .bookform .row h3 {
   display: inline-block;
-  min-width: 100px;
+  min-width: 110px;
 }
 .bookform .row > textarea {
   width: 100%;
   max-width: 100%;
   height: 60px;
 }
-
 .bookform .select2 {
   width:94%;
 }
-
+.bookform .activitydate .elapsed input {
+  margin-right:5px;
+}
 .stopbuttons .restart {
   display: none;
 }
@@ -136,12 +149,17 @@ input.adate {
 .register .adate {
   margin-right: 10px;
 }
+@media (max-width: 600px) {
+  .register .adate {
+    margin-right: 0;
+  }
+}
 .settimepop span {
   padding:0 5px;
 }
 
 #ended .selectors {
-  margin:10px 0;
+  margin-bottom:10px;
 }
 #ended .selectors > div {
   float:left;

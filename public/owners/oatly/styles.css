@@ -76,3 +76,17 @@ input.hours, input.minutes {
   width:55px;
 }
 
+#booking .divider {
+  background:url(bg-brown.jpg);
+}
+@media (max-width: 600px) {
+  .bookform .activitydate .elapsed input {
+    margin-right:5px;
+  }
+  input.hours, input.minutes {
+    width:50px;
+  }
+  input.adate {
+    width:100px;
+  }
+}

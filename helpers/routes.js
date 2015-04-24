@@ -27,6 +27,9 @@ router.post("/getactiveactivity", mainpage.getActiveActivity);
 router.post("/getlatestactivities", mainpage.getLatestActivities);
 router.post("/getlastactivity", mainpage.getLastActivity);
 
+router.get("/getusers", mainpage.getUsers);
+router.post("/edituser", mainpage.editUser);
+
 router.post("/createcustomer", mainpage.createCustomer);
 router.post("/createproject", mainpage.createProject);
 router.post("/createActivity", mainpage.createActivity);

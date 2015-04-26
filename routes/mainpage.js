@@ -167,9 +167,9 @@ exports.editUser = function(req, res) {
         function() {res.send("");},
         function(err) {
           if (err.indexOf("owneruser") >= 0)
-            res.send("AnvÃ¤ndaren finns redan")
+            res.send("Användaren finns redan")
           else if (err.indexOf("userpassword") >= 0)
-            res.send("Ange ett annat lÃ¶senord")
+            res.send("Ange ett annat lösenord")
           else
             res.send(err);
         }
@@ -180,7 +180,7 @@ exports.editUser = function(req, res) {
         function() { res.send(""); },
         function(err) {
           if (err.indexOf("userpassword") >= 0)
-            res.send("Ange ett annat lÃ¶senord")
+            res.send("Ange ett annat lösenord")
           else
             res.send(err);
         }

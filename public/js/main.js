@@ -28,8 +28,6 @@ $(document).ready(function(){
 
     setupSelectBoxes();
 
-    $(".register .activitydate .adate").datepicker({dateFormat:'yy-mm-dd'});
-
     assignEvents();
 
     var now = new Date();
@@ -49,6 +47,11 @@ $(document).ready(function(){
 
     initGrids();
     
+    $(".register .activitydate .adate").datepicker({dateFormat:'yy-mm-dd'});
+    $("#gs_startdate").datepicker({dateFormat:'yy-mm-dd', onSelect:function(){
+      $("#gs_startdate").trigger("keydown");
+    }});
+
     $(window).bind('resize', function() {
       $("#endedgrid").setGridWidth($("#ended").width());
     });
@@ -707,7 +710,6 @@ $(document).ready(function(){
       postData: {
         idcol:"id",
         cols:"id,username,cid,pid,aid,customer,project,activity,comment,startdate,starttime,elapsedtime",
-        sql: "select * from v_endedtimes",
         from: function(){ 
           return $("#ended input.from").val(); 
         },
@@ -717,11 +719,14 @@ $(document).ready(function(){
           to.setMinutes(59);
           return formatDate(to);
         },
-        username: function(){ 
-          return $("#ended .curruser").val(); 
+        username: function(){
+          if ($("#ended .curruser").length == 0)
+            return "_current_";
+          else 
+            return $("#ended .curruser").val(); 
         }
       },
-      colNames: ['','Användare','', '', '', 'Kund', 'Projekt', 'Aktivitet', 'Beskrivning', 'Datum', 'Starttid', 'Tidsåtgång'],
+      colNames: ['','Användare','', '', '', 'Kund', 'Projekt', 'Aktivitet', 'Kommentar', 'Datum', 'Starttid', 'Tidsåtgång'],
       colModel:[
         {name:'id', hidden:true, width:0 },
         {name:'username', hidden:true, width:5 },

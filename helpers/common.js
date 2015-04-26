@@ -16,7 +16,7 @@ exports.getUser = function(req, res) {
     d.resolve(req.session.user);
   }
   else {
-    var guid = common.getCookie(req, res, "guid");
+    var guid = common.getCookie(req, res, "timesguid");
     db.runQuery("select * from users where guid=?", [guid]).then(
       function(rows) {
         if (rows.length > 0) {
@@ -25,7 +25,7 @@ exports.getUser = function(req, res) {
             function(owners) {
               user.owner = owners[0];
               req.session.user = user;
-              common.setCookie(req, res, "guid", user.guid, 365*24*3600*1000)
+              common.setCookie(req, res, "timesguid", user.guid, 365*24*3600*1000)
               d.resolve(user); 
             },
             function(err) {

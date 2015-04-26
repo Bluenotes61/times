@@ -41,12 +41,14 @@ exports.getEndedTimes = function(req, res) {
       var userwhere;
       if (req.query.username == "_all_")
         userwhere = "1=1";
+      if (req.query.username == "_current_" || !req.query.username)
+        userwhere = "username='" + user.username + "'";
       else
         userwhere = "username='" + req.query.username + "'";
       var params = {
         idcol:req.query.idcol,
         cols:req.query.cols,
-        sql:req.query.sql,
+        sql:"select * from v_endedtimes",
         condition:"ownerid=" + user.owner.id + " and " + userwhere + " and starttime >= '" + req.query.from + "' and starttime <= '" + req.query.to + "'",
         filters:req.query.filters,
         sidx:req.query.sidx,
@@ -177,7 +179,6 @@ exports.editUser = function(req, res) {
       db.runQuery("update users set password=?, name=?, isadmin=?, isactive=? where id=?", [req.body.password, req.body.name, isadmin, isactive, req.body.id]).then(
         function() { res.send(""); },
         function(err) {
-          console.log(err);
           if (err.indexOf("userpassword") >= 0)
             res.send("Ange ett annat lösenord")
           else
@@ -354,7 +355,7 @@ function doStartActivity(ownerid, username, activityid, comment, starttime) {
   var sql = "insert into rawtimes " + 
     "(ownerid, username, activityid, comment, starttime) " +
     "values (?, ?, ?, ?, ?)";
-  db.runQuery(sql, [ownerid, username, activityid, comment, starttime],true).then(
+  db.runQuery(sql, [ownerid, username, activityid, comment, starttime]).then(
     function(result){
       d.resolve(result.insertId);
     },

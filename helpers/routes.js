@@ -7,7 +7,7 @@ var gridutils = require("../helpers/gridutils.js");
 
 router.get("/login", loginpage.index);
 router.get("/logout", loginpage.logout);
-router.post("/login", loginpage.post);
+router.post("/login", loginpage.login);
 
 router.get("/", mainpage.index);
 

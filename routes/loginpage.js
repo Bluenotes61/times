@@ -26,7 +26,7 @@ exports.index = function(req, res) {
 exports.logout = function(req, res) {
   getOwner(req.headers.host).then(
     function(owner) {
-      common.delCookie(req, res, "guid");
+      common.delCookie(req, res, "timesguid");
       req.session.user = null;
       res.render("login", {
         owner:owner
@@ -36,7 +36,7 @@ exports.logout = function(req, res) {
 }
 
 /*** redirect to mainpage after sucessful login ***/
-exports.post = function(req, res) {
+exports.login = function(req, res) {
   var owner;
   getOwner(req.headers.host).then(
     function(aowner) {
@@ -54,7 +54,7 @@ exports.post = function(req, res) {
       else {
         rows[0].owner = owner;
         req.session.user = rows[0];
-        common.setCookie(req, res, "guid", rows[0].guid, 365*24*3600*1000)
+        common.setCookie(req, res, "timesguid", rows[0].guid, 365*24*3600*1000)
         res.redirect("/");
       }
     },
@@ -67,8 +67,9 @@ exports.post = function(req, res) {
 function getOwner(host) {
   var d = Q.defer();
   var subdomain = host.split('.')[0];
-  db.runQuery("select * from owners where subdomain=? or subdomain=? order by id desc", [subdomain, '040']).then(
+  db.runQuery("select * from owners where subdomain=? or id=1 order by id desc", [subdomain]).then(
     function(owners) {
+      console.log(owners[0]);
       d.resolve(owners[0]);
     },
     function(err) {

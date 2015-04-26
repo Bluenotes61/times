@@ -69,7 +69,6 @@ function getOwner(host) {
   var subdomain = host.split('.')[0];
   db.runQuery("select * from owners where subdomain=? or id=1 order by id desc", [subdomain]).then(
     function(owners) {
-      console.log(owners[0]);
       d.resolve(owners[0]);
     },
     function(err) {

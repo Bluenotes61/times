@@ -9,11 +9,10 @@ exports.index = function(req, res) {
       res.redirect("/"); 
     },
     function(err) {
-      getOwner(req.headers.host).then(
+      getOwner(req).then(
         function(owner) {
           res.render("login", {
-            owner:owner,
-            host:JSON.stringify(req.headers)
+            owner:owner
           });
         },
         function(err) {
@@ -25,7 +24,7 @@ exports.index = function(req, res) {
 };
 
 exports.logout = function(req, res) {
-  getOwner(req.headers.host).then(
+  getOwner(req).then(
     function(owner) {
       common.delCookie(req, res, "timesguid");
       req.session.user = null;
@@ -41,7 +40,7 @@ exports.login = function(req, res) {
   db.runQuery("select * from users where username=? AND password=?", [req.body.username, req.body.password]).then(
     function(rows) {
       if (rows.length == 0) {
-        getOwner(req.headers.host).then(
+        getOwner(req).then(
           function(owner) {
             res.render("login", { 
               owner:owner,
@@ -67,9 +66,10 @@ exports.login = function(req, res) {
   );
 }
 
-function getOwner(host) {
+function getOwner(req) {
   var d = Q.defer();
-  var subdomain = host.split('.')[0];
+  var host = req.headers["x-forwarded-host"] || req.headers.host;
+  var subdomain = (host ? host.split('.')[0] : "");
   db.runQuery("select * from owners where subdomain=? or id=1 order by id desc", [subdomain]).then(
     function(owners) {
       d.resolve(owners[0]);

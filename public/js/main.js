@@ -21,7 +21,7 @@ $(document).ready(function(){
   var latestDDRegister = getDDObject(".register .select2.latest", "Snabbval - Senaste aktiviteter", getLatestActivitiesData);
   var customersDDRegister = getDDObject(".register .select2.customer", "Välj " + titles.lev1, getCustomersData);
   var projectsDDRegister = getDDObject(".register .select2.project", "Välj " + titles.lev2, getProjectsData);
-  var activitiesDDRegister = getDDObject(".register .select2.activity", "Välj " + titles.lev1, getActivitiesData);
+  var activitiesDDRegister = getDDObject(".register .select2.activity", "Välj " + titles.lev3, getActivitiesData);
 
 
   function init() {
@@ -726,7 +726,7 @@ $(document).ready(function(){
             return $("#ended .curruser").val(); 
         }
       },
-      colNames: ['','Användare','', '', '', 'Kund', 'Projekt', 'Aktivitet', 'Kommentar', 'Datum', 'Starttid', 'Tidsåtgång'],
+      colNames: ['','Användare','', '', '', titles.lev1, titles.lev2, titles.lev3, 'Kommentar', 'Datum', 'Starttid', 'Tidsåtgång'],
       colModel:[
         {name:'id', hidden:true, width:0 },
         {name:'username', hidden:true, width:5 },

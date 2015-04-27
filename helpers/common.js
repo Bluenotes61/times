@@ -92,7 +92,6 @@ exports.getCookie = function(req, res, name) {
  * @return {String}   Resulting date in string format
  */
 exports.formatDate = function(d) {
-  var d = new Date();
   var y = d.getFullYear().toString();
   var m = (d.getMonth()+1).toString();
   var d  = d.getDate().toString();

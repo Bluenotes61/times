@@ -45,11 +45,13 @@ exports.getEndedTimes = function(req, res) {
         userwhere = "username='" + user.username + "'";
       else
         userwhere = "username='" + req.query.username + "'";
+      var to = new Date(req.query.to);
+      to.setDate(to.getDate()+1);
       var params = {
         idcol:req.query.idcol,
         cols:req.query.cols,
         sql:"select * from v_endedtimes",
-        condition:"ownerid=" + user.owner.id + " and " + userwhere + " and starttime >= '" + req.query.from + "' and starttime <= '" + req.query.to + "'",
+        condition:"ownerid=" + user.owner.id + " and " + userwhere + " and starttime >= '" + req.query.from + "' and starttime < '" + common.formatDate(to) + "'",
         filters:req.query.filters,
         sidx:req.query.sidx,
         sord:req.query.sord,
@@ -429,6 +431,7 @@ exports.stopActivity = function(req, res) {
 exports.registerActivity = function(req, res) {
   common.getUser(req, res).then(
     function(user){
+      console.log(user);
       var projectid = req.body.projectid;
       var activityid = req.body.activityid;
       var comment = req.body.comment;
@@ -440,7 +443,7 @@ exports.registerActivity = function(req, res) {
         getEmptyActivity(user.username, projectid).then(
           function(id){
             activityid = id;
-            return doRegisterActivity(user.username, activityid, comment, adate, elapsed);
+            return doRegisterActivity(user, activityid, comment, adate, elapsed);
           }
         ).then(
           function(){

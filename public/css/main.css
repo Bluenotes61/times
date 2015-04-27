@@ -170,6 +170,10 @@ input.adate {
   margin-right: 10px;
 }
 
+.ui-jqgrid-sortable:first-letter {
+  text-transform: uppercase;
+}
+
 .select2-results .select2-highlighted {
   background: #3875d7 !important;
 }

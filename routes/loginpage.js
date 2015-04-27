@@ -13,7 +13,7 @@ exports.index = function(req, res) {
         function(owner) {
           res.render("login", {
             owner:owner,
-            host:req.headers.host
+            host:req.headers
           });
         },
         function(err) {

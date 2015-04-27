@@ -41,7 +41,7 @@ exports.getEndedTimes = function(req, res) {
       var userwhere;
       if (req.query.username == "_all_")
         userwhere = "1=1";
-      if (req.query.username == "_current_" || !req.query.username)
+      else if (req.query.username == "_current_" || !req.query.username)
         userwhere = "username='" + user.username + "'";
       else
         userwhere = "username='" + req.query.username + "'";
@@ -93,7 +93,6 @@ exports.saveTime = function(req, res) {
     getActivityToSave(req, res).then(
       function(activityid){
         var starttime = new Date(req.body.startdate + " " + req.body.starttime).format();
-        console.log(starttime);
         var sql = "update rawtimes set activityid=?, comment=?, starttime=?, elapsedtime=? where id=?";
         return db.runQuery(sql, [activityid, req.body.comment, starttime, req.body.elapsedtime, req.body.id]);
       }

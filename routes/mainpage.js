@@ -92,9 +92,10 @@ exports.saveTime = function(req, res) {
   else if (req.body.oper == "edit") {
     getActivityToSave(req, res).then(
       function(activityid){
-        var starttime = common.formatDateTime(new Date(req.body.startdate + " " + req.body.starttime));
+        var starttime = new Date(req.body.startdate + " " + req.body.starttime).format();
+        console.log(starttime);
         var sql = "update rawtimes set activityid=?, comment=?, starttime=?, elapsedtime=? where id=?";
-        return db.runQuery(sql, [activityid, req.body.comment, starttime, req.body.elapsedtime, req.body.id], true);
+        return db.runQuery(sql, [activityid, req.body.comment, starttime, req.body.elapsedtime, req.body.id]);
       }
     ).then(
       function(rows) {

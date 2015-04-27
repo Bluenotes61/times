@@ -98,6 +98,19 @@ exports.formatDate = function(d) {
   return y + "-" + (m[1] ? m : "0" + m[0]) + "-" + (d[1] ? d : "0" + d[0]);
 };
 
+exports.formatDateTime = function(date) {
+  var y = date.getFullYear().toString();
+  var m = (date.getMonth()+1).toString();
+  var d  = date.getDate().toString();
+  var h  = date.getHours().toString();
+  var mm  = date.getMinutes().toString();
+  return y + "-" + (m[1] ? m : "0" + m[0]) + "-" + (d[1] ? d : "0" + d[0]) + " " + (h[1] ? d : "0" + h[0]) + ":" + (mm[1] ? d : "0" + mm[0]);
+};
+
+exports.adjustForTimezone = function(adate) {
+  return new Date(adate.getTime() + adate.getTimezoneOffset()*60*1000);
+}
+
 /**
  * Log an message to the database and to the console
  * @param  {Request} req Request object for retrieving the loggen in user

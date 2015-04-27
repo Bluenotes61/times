@@ -780,7 +780,7 @@ $(document).ready(function(){
         {
           name:'starttime', width:5, 
           search:false, sortable:false, editable:true, 
-          sorttype:'date', formatter:'date', formatoptions:{srcformat: 'Y-m-d H:i:s', newformat: 'H:i' }
+          sorttype:'date'
         },
         {
           name:'elapsedtime', width:7, 
@@ -904,10 +904,10 @@ $(document).ready(function(){
     var rowid = $("#endedgrid").jqGrid ('getGridParam', 'selrow');
     var currcust = $("#endedgrid").jqGrid("getCell", rowid, "cid");
     ajax.post('/getcustomers', {}).then(
-      function(response) {
+      function(customers) {
         var sel = $("select#customer").empty();
-        for (var i=0; i < response.data.length; i++) 
-          sel.append("<option value='" + response.data[i].value + "' role='option'>" + response.data[i].label + "</option>");
+        for (var i=0; i < customers.length; i++) 
+          sel.append("<option value='" + customers[i].value + "' role='option'>" + customers[i].label + "</option>");
         sel.val(currcust);
         fillEditProjectsDropown(currcust);
       }
@@ -918,10 +918,10 @@ $(document).ready(function(){
     var rowid = $("#endedgrid").jqGrid ('getGridParam', 'selrow');
     var currproj = (changed ? "" : $("#endedgrid").jqGrid("getCell", rowid, "pid"));
     ajax.post('/getprojects', {customer:currcust}).then(
-      function(response) {
+      function(projects) {
         var sel = $("select#project").empty();
-        for (var i=0; i < response.data.length; i++) 
-          sel.append("<option value='" + response.data[i].value + "' role='option'>" + response.data[i].label + "</option>");
+        for (var i=0; i < projects.length; i++) 
+          sel.append("<option value='" + projects[i].value + "' role='option'>" + projects[i].label + "</option>");
         sel.val(currproj);
         if (currproj.length == 0) currproj = "0";
         fillEditActivitiesDropown(currproj, changed);
@@ -933,10 +933,10 @@ $(document).ready(function(){
     var rowid = $("#endedgrid").jqGrid ('getGridParam', 'selrow');
     var curract = (changed ? "" : $("#endedgrid").jqGrid("getCell", rowid, "aid"));
     ajax.post('/getactivities', {project:currproj}).then(
-      function(response) {
+      function(acts) {
         var sel = $("select#activity").empty();
-        for (var i=0; i < response.data.length; i++) 
-          sel.append("<option value='" + response.data[i].value + "' role='option'>" + response.data[i].label + "</option>");
+        for (var i=0; i < acts.length; i++) 
+          sel.append("<option value='" + acts[i].value + "' role='option'>" + acts[i].label + "</option>");
         sel.val(curract);
       }
     );

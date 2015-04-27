@@ -51,7 +51,7 @@ exports.getEndedTimes = function(req, res) {
         idcol:req.query.idcol,
         cols:req.query.cols,
         sql:"select * from v_endedtimes",
-        condition:"ownerid=" + user.owner.id + " and " + userwhere + " and starttime >= '" + req.query.from + "' and starttime < '" + common.formatDate(to) + "'",
+        condition:"ownerid=" + user.owner.id + " and " + userwhere + " and startdate >= '" + req.query.from + "' and startdate < '" + common.formatDate(to) + "'",
         filters:req.query.filters,
         sidx:req.query.sidx,
         sord:req.query.sord,
@@ -92,9 +92,9 @@ exports.saveTime = function(req, res) {
   else if (req.body.oper == "edit") {
     getActivityToSave(req, res).then(
       function(activityid){
-        var starttime = new Date(req.body.startdate + " " + req.body.starttime).format();
+        var starttime = common.formatDateTime(new Date(req.body.startdate + " " + req.body.starttime));
         var sql = "update rawtimes set activityid=?, comment=?, starttime=?, elapsedtime=? where id=?";
-        return db.runQuery(sql, [activityid, req.body.comment, starttime, req.body.elapsedtime, req.body.id]);
+        return db.runQuery(sql, [activityid, req.body.comment, starttime, req.body.elapsedtime, req.body.id], true);
       }
     ).then(
       function(rows) {
@@ -431,7 +431,6 @@ exports.stopActivity = function(req, res) {
 exports.registerActivity = function(req, res) {
   common.getUser(req, res).then(
     function(user){
-      console.log(user);
       var projectid = req.body.projectid;
       var activityid = req.body.activityid;
       var comment = req.body.comment;

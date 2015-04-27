@@ -19,6 +19,10 @@
 .loginbox div.submit {
   text-align: center;
 }
+.loginbox .error {
+  text-align: center;
+  font-weight: bold;
+}
 
 @media (max-width: 600px) {
   .loginbox {

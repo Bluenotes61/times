@@ -8,5 +8,7 @@
     <div><input id='username' name='username' type='text' placeholder='Användarnamn' value='{{username}}'/></div>
     <div><input id='password' name='password' type='password' placeholder='Lösenord' /></div>
     <div class='submit'><input type='submit' class='button' value='Logga in' /></div>
+    {{#badlogin}}<div class='error'>Fel inloggningsuppgifter</div>{{/badlogin}}
   </form>
+  {{host}}
 </div>

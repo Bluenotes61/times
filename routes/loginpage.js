@@ -12,7 +12,8 @@ exports.index = function(req, res) {
       getOwner(req.headers.host).then(
         function(owner) {
           res.render("login", {
-            owner:owner
+            owner:owner,
+            host:req.headers.host
           });
         },
         function(err) {
@@ -43,7 +44,8 @@ exports.login = function(req, res) {
         getOwner(req.headers.host).then(
           function(owner) {
             res.render("login", { 
-              owner:owner
+              owner:owner,
+              badlogin:true
             });
           }
         );

@@ -5,7 +5,11 @@
   background: #fff;
   padding:0 20px;
 }
-
+@media (max-width: 600px) {
+  .centerarea {
+    padding:0;
+  }
+}
 #booking {
   padding-bottom: 20px;
 }

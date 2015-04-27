@@ -37,25 +37,26 @@ exports.logout = function(req, res) {
 
 /*** redirect to mainpage after sucessful login ***/
 exports.login = function(req, res) {
-  var owner;
-  getOwner(req.headers.host).then(
-    function(aowner) {
-      owner = aowner;
-      var sql = "select * from users where username=? AND password=? and ownerid=?";
-      return db.runQuery(sql, [req.body.username, req.body.password, owner.id]);
-    }
-  ).then(
+  db.runQuery("select * from users where username=? AND password=?", [req.body.username, req.body.password]).then(
     function(rows) {
       if (rows.length == 0) {
-        res.render("login", {
-          owner:owner
-        });
+        getOwner(req.headers.host).then(
+          function(owner) {
+            res.render("login", { 
+              owner:owner
+            });
+          }
+        );
       }
       else {
-        rows[0].owner = owner;
-        req.session.user = rows[0];
-        common.setCookie(req, res, "timesguid", rows[0].guid, 365*24*3600*1000)
-        res.redirect("/");
+        db.runQuery("select * from owners where id=?", [rows[0].ownerid]).then(
+          function(owners) {
+            rows[0].owner = owners[0];
+            req.session.user = rows[0];
+            common.setCookie(req, res, "timesguid", rows[0].guid, 365*24*3600*1000)
+            res.redirect("/");
+          }
+        );
       }
     },
     function(err) {

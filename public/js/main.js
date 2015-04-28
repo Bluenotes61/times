@@ -25,6 +25,7 @@ $(document).ready(function(){
 
 
   function init() {
+    $.datepicker.setDefaults($.datepicker.regional["sv"]);
 
     setupSelectBoxes();
 

@@ -32,7 +32,7 @@ router.post("/edituser", mainpage.editUser);
 
 router.post("/createcustomer", mainpage.createCustomer);
 router.post("/createproject", mainpage.createProject);
-router.post("/createActivity", mainpage.createActivity);
+router.post("/createactivity", mainpage.createActivity);
 router.post("/deletecustomer", mainpage.deleteCustomer);
 router.post("/deleteproject", mainpage.deleteProject);
 router.post("/deleteactivity", mainpage.deleteActivity);

@@ -603,35 +603,32 @@ exports.createActivity = function(req, res) {
     function(user){
       var projectid = req.body.projectid;
       var aname = req.body.name;
-      return db.runQuery("select * from activities where username=? and name=? and projectid=?", [user.username, aname, projectid]);
-    }
-  ).then(
-    function(rows) {
-      if (rows.length > 0) {
-        var id = rows[0].id;
-        db.runQuery("update activities set deleted=0 where id=?", [id]).then(
-          function(response) {
-            res.json({id:id});
-          },
-          function(err) {
-            res.end(err);
+      db.runQuery("select * from activities where username=? and name=? and projectid=?", [user.username, aname, projectid]).then(
+        function(rows) {
+          if (rows.length > 0) {
+            var id = rows[0].id;
+            db.runQuery("update activities set deleted=0 where id=?", [id]).then(
+              function(response) {
+                res.json({id:id});
+              },
+              function(err) {
+                res.end(err);
+              }
+            );
           }
-        );
-      }
-      else {
-        db.runQuery("insert into activities (username, name, projectid, deleted) values(?, ?, ?, 0)", [user.username, aname, projectid]).then(
-          function(response) {
-            res.json({id:response.insertId});
-          },
-          function(err) {
-            res.end(err);
+          else {
+            db.runQuery("insert into activities (username, name, projectid, deleted) values(?, ?, ?, 0)", [user.username, aname, projectid]).then(
+              function(response) {
+                res.json({id:response.insertId});
+              },
+              function(err) {res.end(err);}
+            );
           }
-        );
-      }
+        },
+        function(err) {res.end(err);}
+      );
     },
-    function(err) {
-      res.end(err);
-    }
+    function(err) {res.end(err);}
   );
 };
 

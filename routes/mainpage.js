@@ -178,6 +178,8 @@ exports.editUser = function(req, res) {
       );
     }
     else if (req.body.oper == "edit") {
+      var isadmin = (req.body.isadmin == "Ja" ? "1" : "0");
+      var isactive = (req.body.isactive == "Ja" ? "1" : "0");
       db.runQuery("update users set password=?, name=?, isadmin=?, isactive=? where id=?", [req.body.password, req.body.name, isadmin, isactive, req.body.id]).then(
         function() { res.send(""); },
         function(err) {

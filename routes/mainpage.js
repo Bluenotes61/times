@@ -39,12 +39,12 @@ exports.getEndedTimes = function(req, res) {
   common.getUser(req, res).then(
     function(user){
       var userwhere;
-      if (req.query.username == "_all_")
+      if (req.query.curruser == "_all_")
         userwhere = "1=1";
-      else if (req.query.username == "_current_" || !req.query.username)
+      else if (req.query.curruser == "_current_" || !req.query.curruser)
         userwhere = "username='" + user.username + "'";
       else
-        userwhere = "username='" + req.query.username + "'";
+        userwhere = "username='" + req.query.curruser + "'";
       var to = new Date(req.query.to);
       to.setDate(to.getDate()+1);
       var params = {

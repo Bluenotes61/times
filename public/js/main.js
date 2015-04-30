@@ -720,7 +720,7 @@ $(document).ready(function(){
           to.setMinutes(59);
           return formatDate(to);
         },
-        username: function(){
+        curruser: function(){
           if ($("#ended .curruser").length == 0)
             return "_current_";
           else 

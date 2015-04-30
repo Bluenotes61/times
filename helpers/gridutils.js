@@ -82,7 +82,7 @@ function getDBData(params) {
   if (params.sidx && params.sidx.length > 0)
     sql += "order by " + params.sidx + " " + params.sord;
 
-  db.runQuery(sql, [], true).then(
+  db.runQuery(sql, []).then(
     function(rows){
       d.resolve(rows);
     },

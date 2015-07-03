@@ -556,7 +556,7 @@ $(document).ready(function(){
           projectsDDRegister.select2("data", null);
           activitiesDDRegister.select2("data", null);
           $(".register .comment").val("");
-//          $(".register .adate").val(formatDate(new Date()));
+          $(".register .adate").val(formatDate(new Date()));
           $(".register .hours").val("");
           $(".register .minutes").val("");
           $(".regbuttons .register").text("Aktivitet registrerad");

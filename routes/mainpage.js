@@ -199,7 +199,7 @@ exports.editUser = function(req, res) {
 exports.getLatestActivities = function(req, res) {
   common.getUser(req, res).then(
     function(user){
-      var sql = "select distinct rt.id, a.id as aid, a.name as aname, p.id as pid, p.name as pname, c.id as cid, c.name as cname " +
+      var sql = "select a.id as aid, a.name as aname, p.id as pid, p.name as pname, c.id as cid, c.name as cname " +
         "from rawtimes rt " +
         "inner join activities a on a.id=rt.activityid " +
         "inner join projects p on p.id=a.projectid " +
@@ -210,7 +210,15 @@ exports.getLatestActivities = function(req, res) {
     }
   ).then(
     function(rows) {
-      res.json(rows);
+      var acts = [];
+      var curract = 0;
+      for (var i=0; i < rows.length; i++) {
+        if (rows[i].aid != curract) {
+          acts.push(rows[i]);
+          curract = rows[i].aid;
+        }
+      }
+      res.json(acts);
     },
     function(err) {
       res.end(err);

@@ -199,7 +199,7 @@ exports.editUser = function(req, res) {
 exports.getLatestActivities = function(req, res) {
   common.getUser(req, res).then(
     function(user){
-      var sql = "select distinct a.id as aid, a.name as aname, p.id as pid, p.name as pname, c.id as cid, c.name as cname " +
+      var sql = "select distinct rt.id, a.id as aid, a.name as aname, p.id as pid, p.name as pname, c.id as cid, c.name as cname " +
         "from rawtimes rt " +
         "inner join activities a on a.id=rt.activityid " +
         "inner join projects p on p.id=a.projectid " +

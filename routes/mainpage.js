@@ -211,11 +211,11 @@ exports.getLatestActivities = function(req, res) {
   ).then(
     function(rows) {
       var acts = [];
-      var curract = 0;
+      var ids = [];
       for (var i=0; i < rows.length; i++) {
-        if (rows[i].aid != curract) {
+        if (ids.indexOf(rows[i].aid) < 0) {
           acts.push(rows[i]);
-          curract = rows[i].aid;
+          ids.push(rows[i].aid);
         }
       }
       res.json(acts);

@@ -346,7 +346,7 @@ $(document).ready(function(){
       var activitiesDD = (parent.hasClass("start") ? activitiesDDStart : activitiesDDRegister);
       if (customersDD.select2("data") != null) {
         var name = customersDD.select2("data").text;
-        if (confirm("Är du säker på att du vill ta bort kunden " + name + " från databasen?")) {
+        if (confirm("Är du säker på att du vill ta bort " + name + "?")) {
           var id = customersDD.select2("data").id;
           ajax.post('/deletecustomer', {customerid: id}).then(
             function() {
@@ -371,7 +371,7 @@ $(document).ready(function(){
       var activitiesDD = (parent.hasClass("start") ? activitiesDDStart : activitiesDDRegister);
       if (projectsDD.select2("data") != null) {
         var name = projectsDD.select2("data").text;
-        if (confirm("Är du säker på att du vill ta bort projektet " + name + " från databasen?")) {
+        if (confirm("Är du säker på att du vill ta bort projektet " + name + "?")) {
           var id = projectsDD.select2("data").id;
           ajax.post('/deleteproject', {projectid: id}).then(
             function() {
@@ -393,7 +393,7 @@ $(document).ready(function(){
       var activitiesDD = (parent.hasClass("start") ? activitiesDDStart : activitiesDDRegister);
       if (activitiesDD.select2("data") != null) {
         var name = activitiesDD.select2("data").text;
-        if (confirm("Är du säker på att du vill ta bort aktivitieten " + name + " från databasen?")) {
+        if (confirm("Är du säker på att du vill ta bort " + name + "?")) {
           var id = activitiesDD.select2("data").id;
           ajax.post('/deleteactivity', {activityid: id}).then(
             function() {

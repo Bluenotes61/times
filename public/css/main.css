@@ -2,7 +2,6 @@
   max-width: 1000px;
   margin:0 auto;
   height: 100%;
-  background: #fff;
   padding:0 20px;
 }
 @media (max-width: 600px) {
@@ -11,6 +10,7 @@
   }
 }
 #booking {
+  background: #fff;
   padding-bottom: 20px;
 }
 .error {
@@ -29,6 +29,14 @@ input.hours, input.minutes {
 }
 input.adate {
   width:88px;
+}
+a.delete {
+  display: inline-block;
+  background:url(/gfx/trash.svg) no-repeat center center;
+  background-size: auto 100%;
+  width:15px;
+  height: 15px;
+  vertical-align: middle;
 }
 
 #ended, #users {
@@ -81,7 +89,7 @@ input.adate {
 }
 #tabs a {
   display: inline-block;
-  padding:5px 10px;
+  padding:10px 20px;
   font-weight: bold;
   border-radius: 0 0 4px 4px;
 }
@@ -104,8 +112,8 @@ input.adate {
   margin-right: 1%;
   min-width:200px;
   padding:15px;
-  border:solid 1px #ccc;
-}
+/*  border:solid 1px #ccc;
+*/}
 @media (max-width: 600px) {
   .bookform {
     width:100%;

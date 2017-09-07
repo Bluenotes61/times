@@ -81,12 +81,17 @@ img { border:0; }
 #topbar .left {
   float: left;
 }
+#topbar .center {
+  position: absolute;
+  text-align: center;
+  left:0;
+  right: 0;
+  margin:0 auto;
+  width:250px;
+}
 #topbar img {
   max-height:40px;
   margin-right: 20px;
-}
-#topbar .left h1 {
-  display: inline;
 }
 #topbar .userinfo {
   float:right;
@@ -101,7 +106,7 @@ img { border:0; }
 
 .button {
   display:inline-block;
-  padding:5px 20px;
+  padding:10px 20px;
   margin-top:10px;
   margin-right: 10px;
   font-weight: bold;

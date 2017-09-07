@@ -31,6 +31,9 @@ exports.logout = function(req, res) {
       res.render("login", {
         owner:owner
       });
+    },
+    function(err) {
+      res.send(err);
     }
   );
 }
@@ -69,10 +72,12 @@ exports.login = function(req, res) {
 function getOwner(req) {
   var d = Q.defer();
   var host = req.headers["x-forwarded-host"] || req.headers.host;
-  var subdomain = (host ? host.split('.')[0] : "");
-  db.runQuery("select * from owners where subdomain=? or id=1 order by id desc", [subdomain]).then(
+  db.runQuery("select * from owners where subdomain=?", [host]).then(
     function(owners) {
-      d.resolve(owners[0]);
+      if (owners.length > 0)
+        d.resolve(owners[0]);
+      else
+        d.reject("Customer not found");
     },
     function(err) {
       d.reject(err);

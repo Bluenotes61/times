@@ -21,12 +21,13 @@
     <div id='topbar' class='clearfix'>
       <div class='left'><img class='logo' src='/owners/{{owner.resources}}/logo.png' /></div>
       <div class='center'><h1>Tidregistrering</h1></div>
-      {{#user}}
-        <div class='userinfo'>
+      <div class='userinfo'>
+        {{#user}}
           <span>{{user.name}}</span>
           <a class='logout' href='logout'>Logga ut</a>
-        </div>
-      {{/user}}
+        {{/user}}
+        &nbsp;
+      </div>
     </div>
     {{{yield}}}
   </body>

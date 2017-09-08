@@ -65,7 +65,7 @@ input.hours, input.minutes {
 }
 
 #booking .divider {
-  background:url(bg-brown.jpg);
+  background:#000;
 }
 @media (max-width: 600px) {
   .bookform .activitydate .elapsed input {

@@ -1,0 +1,42 @@
+#topbar {
+  background:#216aae;
+  color:#fff;
+}
+#topbar h1 {
+  color:#fff;
+}
+
+#topbar .userinfo a {
+  color:#ccc;
+}
+#topbar .userinfo a:hover {
+  color:#fff;
+}
+
+#tabs a {
+  color:#fff;
+  background: #999;
+}
+#tabs a:hover,
+#tabs a.active {
+  background: #216aae;
+}
+
+.loginbox {
+  border:solid 3px #216aae;
+}
+.loginbox input[type=text],
+.loginbox input[type=password] {
+  border:solid 1px #216aae;
+}
+
+.button {
+  color:#fff;
+  background: #216aae;
+}
+.button:hover {
+  background: #4f7ea8;
+}
+#booking .divider {
+  background: #216aae;
+}
